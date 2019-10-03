@@ -1,4 +1,5 @@
 import KeyboardData from "keyboard-data";
+import { getImage } from "utils";
 
 const IMG = "/img/keyboard-layout.png";
 const SIZE = {
@@ -7,8 +8,9 @@ const SIZE = {
 };
 
 class Keyboard {
-	constructor(parentEl) {
+	constructor(parentEl, onKey) {
 		this._parentEl = parentEl;
+		this._onKey = onKey;
 		this._canvas = document.createElement("canvas");
 		this._ctx = this._canvas.getContext("2d");
 		this._img = null;
@@ -16,36 +18,6 @@ class Keyboard {
 		this._lastRatio = -1;
 
 		this._init();
-	}
-
-	async _init() {
-		this._img = await this._getImage(IMG);
-		this._parentEl.appendChild(this._canvas);
-		this._canvas.addEventListener("click", e => {
-			let x = e.layerX;
-			let y = e.layerY;
-
-			if (this._keyboardData) {
-				let find = this._keyboardData.getKey(x, y);
-
-				this._drawBackground();
-				this._drawKey(find);
-			}
-		});
-		this.syncPort();
-	}
-
-	_getImage(src) {
-		return new Promise((resolve, reject) => {
-			let img = new Image();
-			img.addEventListener("load", e => {
-				resolve(img);
-			});
-			img.addEventListener("error", e => {
-				reject(e);
-			});
-			img.src = src;
-		})
 	}
 
 	syncPort() {
@@ -63,6 +35,24 @@ class Keyboard {
 
 			this._drawBackground();
 		}
+	}
+
+	async _init() {
+		this._img = await getImage(IMG);
+		this._parentEl.appendChild(this._canvas);
+		this._canvas.addEventListener("click", e => {
+			let x = e.layerX;
+			let y = e.layerY;
+
+			if (this._keyboardData) {
+				let find = this._keyboardData.getKey(x, y);
+
+				this._drawBackground();
+				this._drawKey(find);
+				if (typeof this._onKey === "function") this._onKey(find);
+			}
+		});
+		this.syncPort();
 	}
 
 	_drawBackground() {

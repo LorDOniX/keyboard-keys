@@ -1,6 +1,4 @@
-const OCTAVES = 7;
-const TONES = ["C", "D", "E", "F", "G", "A", "B"];
-const HALF_TONES = [["C#", "Db"], ["D#", "Eb"], ["F#", "Gb"], ["G#", "Ab"], ["A#", "Bb"]];
+import { TONES, HALF_TONES, OCTAVES } from "conf";
 
 const WHITE_KEY = {
 	height: 292,
