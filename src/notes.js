@@ -1,5 +1,5 @@
 import { getImage } from "utils";
-import { TONES, HALF_TONES, OCTAVES } from "conf";
+import { TONES } from "conf";
 
 const IMAGES = {
 	treble: {
@@ -90,7 +90,29 @@ class Notes {
 				return a.distance - b.distance;
 			});
 
-			if (typeof this._onClick === "function") this._onClick(distances[0].line);
+			// exact
+			let tone = distances[0].line.tone;
+			let octave = distances[0].line.octave;
+
+			if (distances[0].distance > CONFIG.lineDistance / 2) {
+				// mezi - spodek a posuneme
+				let toneInd = distances[0].line.toneInd;
+				toneInd--;
+				if (toneInd < 0) {
+					octave--;
+					toneInd = TONES.length - 1;
+				}
+				tone = TONES[toneInd];
+			}
+
+			console.log(distances)
+
+			if (typeof this._onClick === "function") this._onClick({
+				tone,
+				octave,
+				x,
+				y
+			});
 		});
 
 		console.log(this)
@@ -161,7 +183,7 @@ class Notes {
 	}
 
 	// C4 -> treble, pod C4 bass
-	drawNote(tone, octave) {
+	drawNote(tone, octave, x) {
 		if ((octave > 4 && this._isBass) || (octave < 4 && !this._isBass)) {
 			console.error(`Wrong key ${tone}${octave}!`);
 			return;
@@ -186,6 +208,10 @@ class Notes {
 		}
 
 		if (!find) return;
+
+		if (typeof x === "number") {
+			this._currentX = Math.max(x - IMAGES.note.width / 2, CONFIG.startX);
+		}
 
 		// nota
 		this._ctx.drawImage(this._images.note, this._currentX, find.y - noteHalfHeight + (exact ? 0 : direction * lineHalfHeight));
@@ -233,9 +259,21 @@ class Notes {
 		let startX = CONFIG.paddingLeftRight;
 		let endX = startX + width;
 
+		// pomocne cary
+		this._ctx.strokeStyle = "rgba(0, 0, 0, 0.1)";
+
+		this._dim.lines.forEach(line => {
+			if (line.main) return;
+
+			this._ctx.beginPath();
+			this._ctx.moveTo(startX, line.y);
+			this._ctx.lineTo(endX, line.y);
+			this._ctx.stroke();
+		});
+
+		// hlavni cary
 		this._ctx.strokeStyle = "#000";
 
-		// cary
 		this._dim.mainLines.forEach(line => {
 			this._ctx.beginPath();
 			this._ctx.moveTo(startX, line.y);
