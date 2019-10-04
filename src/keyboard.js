@@ -37,6 +37,17 @@ class Keyboard {
 		}
 	}
 
+	drawKey(tone, octave) {
+		if (this._keyboardData) {
+			let keyData = this._keyboardData.findByTone(tone, octave);
+
+			if (keyData) {
+				this._drawBackground();
+				this._drawKey(keyData);
+			}
+		}
+	}
+
 	async _init() {
 		this._img = await getImage(IMG);
 		this._parentEl.appendChild(this._canvas);
@@ -47,9 +58,11 @@ class Keyboard {
 			if (this._keyboardData) {
 				let find = this._keyboardData.getKey(x, y);
 
-				this._drawBackground();
-				this._drawKey(find);
-				if (typeof this._onKey === "function") this._onKey(find);
+				if (find) {
+					this._drawBackground();
+					this._drawKey(find);
+					if (typeof this._onKey === "function") this._onKey(find);
+				}
 			}
 		});
 		this.syncPort();

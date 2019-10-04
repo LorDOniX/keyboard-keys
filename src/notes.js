@@ -62,9 +62,10 @@ const NOTES = {
 }
 
 class Notes {
-	constructor(parentEl, isBass) {
+	constructor(parentEl, isBass, onClick) {
 		this._parentEl = parentEl;
 		this._isBass = isBass;
+		this._onClick = onClick;
 		this._canvas = document.createElement("canvas");
 		this._ctx = this._canvas.getContext("2d");
 		this._images = {};
@@ -76,6 +77,21 @@ class Notes {
 		this._currentX = CONFIG.startX;
 		this._mapping = {};
 		this._mappingArray = [];
+		this._canvas.addEventListener("click", e => {
+			let x = e.layerX;
+			let y = e.layerY;
+
+			let distances =  this._dim.lines.map(line => {
+				return {
+					line,
+					distance: Math.abs(line.y - y)
+				};
+			}).sort((a, b) => {
+				return a.distance - b.distance;
+			});
+
+			if (typeof this._onClick === "function") this._onClick(distances[0].line);
+		});
 
 		console.log(this)
 	}

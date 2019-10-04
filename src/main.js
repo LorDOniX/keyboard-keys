@@ -20,8 +20,14 @@ class Main {
 				this._notesBass.drawNote(key.tone, key.octave);
 			}
 		});
-		this._notesTreble = new Notes(document.getElementById("notesTreble"));
-		this._notesBass = new Notes(document.getElementById("notesBass"), true);
+		this._notesTreble = new Notes(document.getElementById("notesTreble"), false, data => {
+			this._keyboard.drawKey(data.tone, data.octave);
+			this._notesTreble.drawNote(data.tone, data.octave);
+		});
+		this._notesBass = new Notes(document.getElementById("notesBass"), true, data => {
+			this._keyboard.drawKey(data.tone, data.octave);
+			this._notesBass.drawNote(data.tone, data.octave);
+		});
 
 		this._init();
 	}
