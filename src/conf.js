@@ -24,3 +24,80 @@ CHORDS_RULES[CHORDS_KEYS[3]].push(10);
 // dominant 7th
 CHORDS_RULES[CHORDS_KEYS[4]] = CHORDS_RULES[CHORDS_KEYS[0]].slice();
 CHORDS_RULES[CHORDS_KEYS[4]].push(10);
+
+export const KEYS_SIGNATURES = [{
+		name: "Cb dur",
+		tones: ["Cb", "Db", "Eb", "Fb", "Gb", "Ab", "Bb"],
+		key: "b",
+		count: 7
+	}, {
+		name: "Gb dur",
+		tones: ["Cb", "Db", "Eb", "F", "Gb", "Ab", "Bb"],
+		key: "b",
+		count: 6
+	}, {
+		name: "Db dur",
+		tones: ["C", "Db", "Eb", "F", "Gb", "Ab", "Bb"],
+		key: "b",
+		count: 5
+	}, {
+		name: "Ab dur",
+		tones: ["C", "Db", "Eb", "F", "G", "Ab", "Bb"],
+		key: "b",
+		count: 4
+	}, {
+		name: "Eb dur",
+		tones: ["C", "D", "Eb", "F", "G", "Ab", "Bb"],
+		key: "b",
+		count: 3
+	}, {
+		name: "Bb dur",
+		tones: ["C", "D", "Eb", "F", "G", "A", "Bb"],
+		key: "b",
+		count: 2
+	}, {
+		name: "F dur",
+		tones: ["C", "D", "E", "F", "G", "A", "Bb"],
+		key: "b",
+		count: 1
+	}, {
+		name: "C dur",
+		tones: ["C", "D", "E", "F", "G", "A", "B"],
+		key: "#",
+		count: 0
+	}, {
+		name: "G dur",
+		tones: ["C", "D", "E", "F#", "G", "A", "B"],
+		key: "#",
+		count: 1
+	}, {
+		name: "D dur",
+		tones: ["C#", "D", "E", "F#", "G", "A", "B"],
+		key: "#",
+		count: 2
+	}, {
+		name: "A dur",
+		tones: ["C#", "D", "E", "F#", "G#", "A", "B"],
+		key: "#",
+		count: 3
+	}, {
+		name: "E dur",
+		tones: ["C#", "D#", "E", "F#", "G#", "A", "B"],
+		key: "#",
+		count: 4
+	}, {
+		name: "B dur",
+		tones: ["C#", "D#", "E", "F#", "G#", "A#", "B"],
+		key: "#",
+		count: 5
+	}, {
+		name: "GbF# dur",
+		tones: ["C#", "D#", "E#", "F#", "G#", "A#", "B"],
+		key: "#",
+		count: 6
+	}, {
+		name: "C# dur",
+		tones: ["C#", "D#", "E#", "F#", "G#", "A#", "B#"],
+		key: "#",
+		count: 7
+}];

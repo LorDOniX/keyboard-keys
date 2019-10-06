@@ -1,6 +1,7 @@
 import Keyboard from "keyboard";
 import Notes from "notes";
 import Chords from "./chords";
+import { KEYS_SIGNATURES } from "conf";
 
 class Main {
 	constructor() {
@@ -66,6 +67,7 @@ class Main {
 		await this._notesBass.load();
 		this._toneControl();
 		this._buttons();
+		this._signatures();
 	}
 
 	_showTone(tone, octave, isBass, x) {
@@ -84,18 +86,33 @@ class Main {
 	}
 
 	_toneControl() {
-		let btn = document.querySelector(".tone-control button");
-		let input = document.querySelector(".tone-control input");
+		let btn = document.querySelector("#control .tone-control button");
+		let input = document.querySelector("#control .tone-control input");
 		let cb = () => {
 			let value = input.value.trim().toUpperCase();
-			let m = value.match(/([CDEFGAB][#b]?)([0-7])/);
+			let allMatches = value.match(/[CDEFGAB][#b]?[0-7]/g);
 
-			if (m) {
-				let tone = m[1];
-				let octave = parseFloat(m[2]);
+			if (allMatches) {
+				let items = [];
+				allMatches.forEach(item => {
+					let m = item.match(/([CDEFGAB][#b]?)([0-7])/);
 
-				this._showTone(tone, octave, octave < 4);
+					if (m) {
+						let tone = m[1];
+						let octave = parseFloat(m[2]);
+
+						items.push({
+							tone,
+							octave
+						});
+					}
+				});
+
+				if (items.length) {
+					this.showChord("Custom", items);
+				}
 			}
+			
 		};
 		btn.addEventListener("click", cb);
 		input.addEventListener("keydown", e => {
@@ -104,7 +121,7 @@ class Main {
 	}
 
 	_buttons() {
-		document.querySelector(".buttons .c4").addEventListener("click", e => {
+		document.querySelector("#control .buttons .c4").addEventListener("click", e => {
 			let tone = "C";
 			let octave = 4;
 
@@ -114,6 +131,33 @@ class Main {
 			this._notesTreble.moveOffset();
 			this._notesBass.drawNote(tone, octave);
 			this._notesBass.moveOffset();
+		});
+	}
+
+	_signatures() {
+		let info = document.querySelector("#signaturesCont .signatures .info");
+		let selectEl = document.querySelector("#signaturesCont .signatures select");
+		KEYS_SIGNATURES.forEach(item => {
+			let option = document.createElement("option");
+			option.value = item.name;
+			option.textContent = `${item.name} ${item.key}${item.count}`;
+			selectEl.appendChild(option);
+		});
+		selectEl.value = KEYS_SIGNATURES.filter(i => i.key == "#" && i.count == 0)[0].name;
+
+		document.querySelector("#signaturesCont .signatures button").addEventListener("click", e => {
+			let value = KEYS_SIGNATURES.filter(i => i.name == selectEl.value);
+
+			if (value.length) {
+				let item = value[0];
+				info.textContent = item.tones.join(", ");
+				this._keyboard.drawKeys(item.tones.map(i => {
+					return {
+						tone: i,
+						octave: 4
+					};
+				}));
+			}
 		});
 	}
 };

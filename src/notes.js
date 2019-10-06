@@ -12,11 +12,6 @@ const IMAGES = {
 		src: "/img/bass.png",
 		width: 46,
 		height: 53
-	},
-	note: {
-		src: "/img/note.png",
-		width: 22,
-		height: 19
 	}
 };
 
@@ -126,7 +121,6 @@ class Notes {
 			// obrazky
 			this._images.treble = await getImage(IMAGES.treble.src);
 			this._images.bass = await getImage(IMAGES.bass.src);
-			this._images.note = await getImage(IMAGES.note.src);
 
 			// spocitame
 			let y = CONFIG.paddingTopBottom;
