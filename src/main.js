@@ -8,17 +8,19 @@ class Main {
 		this._keyboard = new Keyboard(document.getElementById("keyboard"), key => {
 			let tone = key.tone;
 			let octave = key.octave;
+			let isSharp = false;
 			let toneTxt = `${tone}${octave}`;
 
 			if (Array.isArray(key.tone)) {
 				tone = key.tone[0].replace("#", "");
+				isSharp = true;
 				toneTxt = `${key.tone[0]}${octave}, ${key.tone[1]}${octave}`;
 			}
 
 			this._info.textContent = toneTxt;
 
 			if (octave >= 4) {
-				this._notesTreble.drawNote(tone, octave);
+				this._notesTreble.drawNote(tone, octave, isSharp);
 				this._notesTreble.moveOffset();
 
 				if (tone == "C" && octave == 4 && !Array.isArray(key.tone)) {
@@ -27,15 +29,15 @@ class Main {
 				}
 			}
 			else {
-				this._notesBass.drawNote(tone, octave);
+				this._notesBass.drawNote(tone, octave, isSharp);
 				this._notesBass.moveOffset();
 			}
 		});
 		this._notesTreble = new Notes(document.getElementById("notesTreble"), false, data => {
-			this._showTone(data.tone, data.octave, false/*, data.x*/);
+			this._showTone(data.tone, data.octave, false, false/*, data.x*/);
 		});
 		this._notesBass = new Notes(document.getElementById("notesBass"), true, data => {
-			this._showTone(data.tone, data.octave, true/*, data.x*/);
+			this._showTone(data.tone, data.octave, true, false/*, data.x*/);
 		});
 		this._chords = new Chords(this, document.querySelector("#control .chords select.octave"), document.querySelector("#control .chords select.key"), 
 								document.querySelector("#control .chords select.note"), document.querySelector("#control .chords button.show"));
@@ -44,22 +46,14 @@ class Main {
 	}
 
 	showChord(name, tones) {
-		let moveBass = false;
+		if (!Array.isArray(tones) || !tones.length) return;
 
-		tones.forEach(item => {
-			if (item.octave < 4) {
-				this._notesBass.drawNote(item.tone.replace("#", ""), item.octave);
-				moveBass = true;
-			}
-			else {
-				this._notesTreble.drawNote(item.tone.replace("#", ""), item.octave);
-			}
-		});
-
-		if (moveBass) {
+		if (tones[0].octave < 4) {
+			this._notesBass.drawNotes(tones);
 			this._notesBass.moveOffset();
 		}
 		else {
+			this._notesTreble.drawNotes(tones);
 			this._notesTreble.moveOffset();
 		}
 
@@ -78,11 +72,11 @@ class Main {
 		this._keyboard.drawKey(tone, octave);
 
 		if (isBass) {
-			this._notesBass.drawNote(tone, octave, x);
+			this._notesBass.drawNote(tone, octave, false, x);
 			this._notesBass.moveOffset();
 		}
 		else {
-			this._notesTreble.drawNote(tone, octave, x);
+			this._notesTreble.drawNote(tone, octave, false, x);
 			this._notesTreble.moveOffset();
 		}
 

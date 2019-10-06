@@ -24,11 +24,12 @@ const CONFIG = {
 	paddingTopBottom: 30, // prostor nad linkou a pod
 	paddingLeftRight: 30,
 	lineHeight: 3,
-	lineDistance: 13,
+	lineDistance: 14,
 	keyOffset: 10,
 	clickDistanceThreshold: 4,
 	lines: 5,
 	startX: 110,
+	noteSize: 8,
 	noteHandle: {
 		width: 3,
 		height: 51
@@ -183,72 +184,63 @@ class Notes {
 	}
 
 	// C4 -> treble, pod C4 bass
-	drawNote(tone, octave, x) {
+	drawNote(tone, octave, isSharp, x) {
 		if (this._currentX > this._canvas.width - 2 * CONFIG.paddingLeftRight) {
 			this._currentX = CONFIG.startX;
 			this.redraw();
 		}
 
-		let toneInd = TONES.indexOf(tone);
-		let find = null;
-		let exact = false;
-		let direction = 0;
-		let noteHalfHeight = IMAGES.note.height / 2;
-		let lineHalfHeight = CONFIG.lineDistance / 2;
+		let findData = this._findNote(tone, octave);
 
-		for (let i = this._dim.lines.length - 1; i >= 0; i--) {
-			let item = this._dim.lines[i];
-
-			if (item.octave == octave && Math.abs(item.toneInd - toneInd) <= 1) {
-				find = item;
-				exact = toneInd == item.toneInd;
-				direction = exact ? 0 : (item.toneInd > toneInd ? 1 : -1);
-				break;
-			}
-		}
-
-		if (!find) return;
+		if (!findData) return;
 
 		if (typeof x === "number") {
-			this._currentX = Math.max(x - IMAGES.note.width / 2, CONFIG.startX);
+			this._currentX = Math.max(x - CONFIG.noteSize / 2, CONFIG.startX);
 		}
 
-		// nota
-		this._ctx.drawImage(this._images.note, this._currentX, find.y - noteHalfHeight + (exact ? 0 : direction * lineHalfHeight));
+		this._drawNote(findData, isSharp);
+	}
 
-		// mrizkovani
-		let lastInd = this._dim.mainLines[this._dim.mainLines.length - 1].ind;
+	drawNotes(notes) {
+		let sharpStartAdd = 15;
+		let nonSharpOffset = 15;
+		let hasSharp = false;
+		let items = [];
+		notes.forEach(i => {
+			let isSharp = i.tone.indexOf("#") != -1;
+			let findData = this._findNote(i.tone.replace("#", ""), i.octave);
 
-		if (find.ind < this._dim.mainLines[0].ind) {
-			for (let i = find.ind; i < this._dim.mainLines[0].ind; i++) {
-				let item = this._dim.lines[i];
+			if (findData) {
+				if (isSharp) {
+					hasSharp = true;
+				}
 
-				this._ctx.beginPath();
-				this._ctx.moveTo(this._currentX - 5, item.y);
-				this._ctx.lineTo(this._currentX + IMAGES.note.width + 5, item.y);
-				this._ctx.stroke();
+				items.push({
+					findData,
+					isSharp
+				});
 			}
-		}
-		else if (find.ind > lastInd) {
-			this._ctx.lineWidth = 2;
+		});
 
-			for (let i = lastInd + 1, max = find.ind + direction; i <= max; i++) {
-				let item = this._dim.lines[i];
-
-				if (!item || (i == max && tone == "C" && octave == 1)) break;
-				
-				this._ctx.beginPath();
-				this._ctx.moveTo(this._currentX - 5, item.y);
-				this._ctx.lineTo(this._currentX + IMAGES.note.width + 5, item.y);
-				this._ctx.stroke();
+		items.forEach(i => {
+			if (hasSharp) {
+				i.findData.x += 10;
 			}
 
-			this._ctx.lineWidth = 1;
+			if (!i.isSharp && hasSharp) {
+				i.findData.x += nonSharpOffset;
+			}
+
+			this._drawNote(i.findData, i.isSharp);
+		});
+
+		if (hasSharp) {
+			this._currentX += nonSharpOffset + sharpStartAdd;
 		}
 	}
 
 	moveOffset() {
-		this._currentX += IMAGES.note.width + 25;
+		this._currentX += CONFIG.noteSize + 21;
 	}
 
 	_drawBackground() {
@@ -303,6 +295,88 @@ class Notes {
 		}
 		else {
 			this._ctx.drawImage(this._images.treble, startX, this._dim.mainLines[this._dim.mainLines.length - 1].y - IMAGES.treble.height + IMAGES.treble.offsetY);
+		}
+	}
+
+	_findNote(tone, octave) {
+		let toneInd = TONES.indexOf(tone);
+		let find = null;
+		let exact = false;
+		let direction = 0;
+
+		for (let i = this._dim.lines.length - 1; i >= 0; i--) {
+			let item = this._dim.lines[i];
+
+			if (item.octave == octave && Math.abs(item.toneInd - toneInd) <= 1) {
+				find = item;
+				exact = toneInd == item.toneInd;
+				direction = exact ? 0 : (item.toneInd > toneInd ? 1 : -1);
+				break;
+			}
+		}
+
+		return (find ? {
+			x: this._currentX,
+			find,
+			direction,
+			exact,
+			tone,
+			octave
+		} : null);
+	}
+
+	_drawNote(findData, isSharp) {
+		// mrizkovani
+		let lastInd = this._dim.mainLines[this._dim.mainLines.length - 1].ind;
+
+		if (findData.find.ind < this._dim.mainLines[0].ind) {
+			for (let i = findData.find.ind; i < this._dim.mainLines[0].ind; i++) {
+				let item = this._dim.lines[i];
+
+				this._ctx.beginPath();
+				this._ctx.moveTo(findData.x - 5, item.y);
+				this._ctx.lineTo(findData.x + 2 * CONFIG.noteSize + 5, item.y);
+				this._ctx.stroke();
+			}
+		}
+		else if (findData.find.ind > lastInd) {
+			this._ctx.lineWidth = 2;
+
+			for (let i = lastInd + 1, max = findData.find.ind + findData.direction; i <= max; i++) {
+				let item = this._dim.lines[i];
+
+				if (!item || (i == max && findData.tone == "C" && findData.octave == 1)) break;
+				
+				this._ctx.beginPath();
+				this._ctx.moveTo(findData.x - 5, item.y);
+				this._ctx.lineTo(findData.x + 2 * CONFIG.noteSize + 5, item.y);
+				this._ctx.stroke();
+			}
+
+			this._ctx.lineWidth = 1;
+		}
+
+		// nota
+		let lineHalfHeight = CONFIG.lineDistance / 2;
+		let noteY = findData.find.y + (findData.exact ? 0 : findData.direction * lineHalfHeight);
+
+		this._ctx.beginPath();
+		this._ctx.arc(findData.x + CONFIG.noteSize, noteY, CONFIG.noteSize, 0, 2 * Math.PI);
+		this._ctx.fillStyle = "#fff";
+		this._ctx.fill();
+		this._ctx.stroke();
+		// nazev
+		let offset = 2;
+
+		this._ctx.fillStyle = "#c01";
+		this._ctx.font = "16px Arial";
+		this._ctx.fillText(findData.tone, findData.x + offset + (findData.tone == "B" ? 1 : 0), noteY + CONFIG.noteSize - offset);
+
+		// krizek?
+		if (isSharp) {
+			this._ctx.fillStyle = "#008000";
+			this._ctx.font = "bold 16px Arial";
+			this._ctx.fillText("#", findData.x - 10, noteY + CONFIG.noteSize - offset);
 		}
 	}
 }
