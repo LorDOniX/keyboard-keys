@@ -39,12 +39,27 @@ class Keyboard {
 
 	drawKey(tone, octave) {
 		if (this._keyboardData) {
+			this._drawBackground();
+
 			let keyData = this._keyboardData.findByTone(tone, octave);
 
 			if (keyData) {
-				this._drawBackground();
 				this._drawKey(keyData);
 			}
+		}
+	}
+
+	drawKeys(keys) {
+		if (this._keyboardData) {
+			this._drawBackground();
+
+			keys.forEach(item => {
+				let keyData = this._keyboardData.findByTone(item.tone, item.octave);
+
+				if (keyData) {
+					this._drawKey(keyData);
+				}
+			});
 		}
 	}
 

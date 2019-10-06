@@ -26,6 +26,7 @@ const CONFIG = {
 	lineHeight: 3,
 	lineDistance: 13,
 	keyOffset: 10,
+	clickDistanceThreshold: 4,
 	lines: 5,
 	startX: 110,
 	noteHandle: {
@@ -94,18 +95,21 @@ class Notes {
 			let tone = distances[0].line.tone;
 			let octave = distances[0].line.octave;
 
-			if (distances[0].distance > CONFIG.lineDistance / 2) {
+			if (distances[0].distance > CONFIG.clickDistanceThreshold) {
 				// mezi - spodek a posuneme
 				let toneInd = distances[0].line.toneInd;
-				toneInd--;
+				let direction = y > distances[0].line.y ? 1 : -1;
+				toneInd -= direction;
 				if (toneInd < 0) {
 					octave--;
 					toneInd = TONES.length - 1;
 				}
+				else if (toneInd > TONES.length - 1) {
+					octave++;
+					toneInd = 0;
+				}
 				tone = TONES[toneInd];
 			}
-
-			console.log(distances)
 
 			if (typeof this._onClick === "function") this._onClick({
 				tone,
@@ -114,8 +118,6 @@ class Notes {
 				y
 			});
 		});
-
-		console.log(this)
 	}
 
 	load() {
@@ -175,8 +177,6 @@ class Notes {
 	}
 
 	redraw() {
-		this._currentX = CONFIG.startX;
-
 		this._drawBackground();
 		this._drawLines();
 		this._drawKey();
@@ -187,6 +187,11 @@ class Notes {
 		if ((octave > 4 && this._isBass) || (octave < 4 && !this._isBass)) {
 			console.error(`Wrong key ${tone}${octave}!`);
 			return;
+		}
+
+		if (this._currentX > this._canvas.width - 2 * CONFIG.paddingLeftRight) {
+			this._currentX = CONFIG.startX;
+			this.redraw();
 		}
 
 		let toneInd = TONES.indexOf(tone);
@@ -232,10 +237,10 @@ class Notes {
 		else if (find.ind > lastInd) {
 			this._ctx.lineWidth = 2;
 
-			for (let i = lastInd + 1; i <= find.ind + direction; i++) {
+			for (let i = lastInd + 1, max = find.ind + direction; i <= max; i++) {
 				let item = this._dim.lines[i];
 
-				if (!item) break;
+				if (!item || (i == max && tone == "C" && octave == 1)) break;
 				
 				this._ctx.beginPath();
 				this._ctx.moveTo(this._currentX - 5, item.y);
@@ -245,7 +250,9 @@ class Notes {
 
 			this._ctx.lineWidth = 1;
 		}
+	}
 
+	moveOffset() {
 		this._currentX += IMAGES.note.width + 25;
 	}
 

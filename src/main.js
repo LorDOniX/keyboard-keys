@@ -1,39 +1,77 @@
 import Keyboard from "keyboard";
 import Notes from "notes";
+import Chords from "./chords";
 
 class Main {
 	constructor() {
 		this._info = document.querySelector("#info h1");
 		this._keyboard = new Keyboard(document.getElementById("keyboard"), key => {
-			this._notesTreble.redraw();
-			this._notesBass.redraw();
-			this._info.textContent = `${key.tone}${key.octave}`;
+			let tone = key.tone;
+			let octave = key.octave;
+			let toneTxt = `${tone}${octave}`;
 
-			if (key.octave >= 4) {
-				this._notesTreble.drawNote(key.tone, key.octave);
+			if (Array.isArray(key.tone)) {
+				tone = key.tone[0].replace("#", "");
+				toneTxt = `${key.tone[0]}${octave}, ${key.tone[1]}${octave}`;
+			}
 
-				if (key.tone == "C" && key.octave == 4) {
-					this._notesBass.drawNote(key.tone, key.octave);
+			this._info.textContent = toneTxt;
+
+			if (octave >= 4) {
+				this._notesTreble.drawNote(tone, octave);
+				this._notesTreble.moveOffset();
+
+				if (tone == "C" && octave == 4 && !Array.isArray(key.tone)) {
+					this._notesBass.drawNote(tone, octave);
+					this._notesBass.moveOffset();
 				}
 			}
 			else {
-				this._notesBass.drawNote(key.tone, key.octave);
+				this._notesBass.drawNote(tone, octave);
+				this._notesBass.moveOffset();
 			}
 		});
 		this._notesTreble = new Notes(document.getElementById("notesTreble"), false, data => {
-			this._showTone(data.tone, data.octave, false, data.x);
+			this._showTone(data.tone, data.octave, false/*, data.x*/);
 		});
 		this._notesBass = new Notes(document.getElementById("notesBass"), true, data => {
-			this._showTone(data.tone, data.octave, true, data.x);
+			this._showTone(data.tone, data.octave, true/*, data.x*/);
 		});
+		this._chords = new Chords(this, document.querySelector("#control .chords select.octave"), document.querySelector("#control .chords select.key"), 
+								document.querySelector("#control .chords select.note"), document.querySelector("#control .chords button.show"));
 
 		this._init();
+	}
+
+	showChord(name, tones) {
+		let moveBass = false;
+
+		tones.forEach(item => {
+			if (item.octave < 4) {
+				this._notesBass.drawNote(item.tone.replace("#", ""), item.octave);
+				moveBass = true;
+			}
+			else {
+				this._notesTreble.drawNote(item.tone.replace("#", ""), item.octave);
+			}
+		});
+
+		if (moveBass) {
+			this._notesBass.moveOffset();
+		}
+		else {
+			this._notesTreble.moveOffset();
+		}
+
+		this._keyboard.drawKeys(tones);
+		this._info.textContent = name + ": " + tones.map(i => `${i.tone}${i.octave}`).join(", ");
 	}
 
 	async _init() {
 		await this._notesTreble.load();
 		await this._notesBass.load();
 		this._toneControl();
+		this._buttons();
 	}
 
 	_showTone(tone, octave, isBass, x) {
@@ -41,9 +79,11 @@ class Main {
 
 		if (isBass) {
 			this._notesBass.drawNote(tone, octave, x);
+			this._notesBass.moveOffset();
 		}
 		else {
 			this._notesTreble.drawNote(tone, octave, x);
+			this._notesTreble.moveOffset();
 		}
 
 		this._info.textContent = `${tone}${octave}`;
@@ -60,14 +100,26 @@ class Main {
 				let tone = m[1];
 				let octave = parseFloat(m[2]);
 
-				this._notesTreble.redraw();
-				this._notesBass.redraw();
 				this._showTone(tone, octave, octave < 4);
 			}
 		};
 		btn.addEventListener("click", cb);
 		input.addEventListener("keydown", e => {
 			if (e.which == 13) cb();
+		});
+	}
+
+	_buttons() {
+		document.querySelector(".buttons .c4").addEventListener("click", e => {
+			let tone = "C";
+			let octave = 4;
+
+			this._info.textContent = `${tone}${octave}`;
+			this._keyboard.drawKey(tone, octave);
+			this._notesTreble.drawNote(tone, octave);
+			this._notesTreble.moveOffset();
+			this._notesBass.drawNote(tone, octave);
+			this._notesBass.moveOffset();
 		});
 	}
 };
