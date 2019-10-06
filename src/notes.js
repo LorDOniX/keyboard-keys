@@ -43,15 +43,15 @@ const NOTES = {
 			octave: 8
 		},
 		bottom: {
-			helpLine: 1,
-			tone: "C",
-			octave: 4
+			helpLine: 2,
+			tone: "A",
+			octave: 3
 		}
 	},
 	bass: {
 		top: {
-			helpLine: 1,
-			tone: "C",
+			helpLine: 2,
+			tone: "E",
 			octave: 4
 		},
 		bottom: {
@@ -184,11 +184,6 @@ class Notes {
 
 	// C4 -> treble, pod C4 bass
 	drawNote(tone, octave, x) {
-		if ((octave > 4 && this._isBass) || (octave < 4 && !this._isBass)) {
-			console.error(`Wrong key ${tone}${octave}!`);
-			return;
-		}
-
 		if (this._currentX > this._canvas.width - 2 * CONFIG.paddingLeftRight) {
 			this._currentX = CONFIG.startX;
 			this.redraw();
