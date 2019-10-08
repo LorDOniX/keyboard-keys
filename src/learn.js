@@ -149,7 +149,7 @@ class Learn {
 					}]
 				}, {
 					el: "buttons",
-					child: {
+					child: [{
 						el: "button",
 						class: "c4",
 						text: "Middle C",
@@ -164,7 +164,91 @@ class Learn {
 							this._notesBass.drawNote(tone, octave);
 							this._notesBass.moveOffset();
 						}
-					}
+					}, {
+						el: "button",
+						class: "c4",
+						text: "Between notes",
+						onclick: () => {
+							this._dom.h1Tone.textContent = `Between notes`;
+
+							let trebleNotes = [{
+								tone: "F",
+								octave: 4
+							}, {
+								tone: "A",
+								octave: 4
+							}, {
+								tone: "C",
+								octave: 5
+							}, {
+								tone: "E",
+								octave: 5
+							}];
+							let bassNotes = [{
+								tone: "A",
+								octave: 2
+							}, {
+								tone: "C",
+								octave: 3
+							}, {
+								tone: "E",
+								octave: 3
+							}, {
+								tone: "G",
+								octave: 3
+							}];
+							this._keyboard.drawKeys(trebleNotes.concat(bassNotes));
+							this._notesTreble.drawNotes(trebleNotes);
+							this._notesTreble.moveOffset();
+							this._notesBass.drawNotes(bassNotes);
+							this._notesBass.moveOffset();
+						}
+					}, {
+						el: "button",
+						class: "c4",
+						text: "On lines",
+						onclick: () => {
+							this._dom.h1Tone.textContent = `On lines`;
+
+							let trebleNotes = [{
+								tone: "E",
+								octave: 4
+							}, {
+								tone: "G",
+								octave: 4
+							}, {
+								tone: "B",
+								octave: 4
+							}, {
+								tone: "D",
+								octave: 5
+							}, {
+								tone: "F",
+								octave: 5
+							}];
+							let bassNotes = [{
+								tone: "G",
+								octave: 2
+							}, {
+								tone: "B",
+								octave: 2
+							}, {
+								tone: "D",
+								octave: 3
+							}, {
+								tone: "F",
+								octave: 3
+							}, {
+								tone: "A",
+								octave: 3
+							}];
+							this._keyboard.drawKeys(trebleNotes.concat(bassNotes));
+							this._notesTreble.drawNotes(trebleNotes);
+							this._notesTreble.moveOffset();
+							this._notesBass.drawNotes(bassNotes);
+							this._notesBass.moveOffset();
+						}
+					}]
 				}, {
 					el: "chords",
 					child: ["Chords: ", {

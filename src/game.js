@@ -68,7 +68,7 @@ class Game {
 			if (tone == this._gameData.curNote.tone && octave == this._gameData.curNote.octave && isSharp == this._gameData.curNote.isSharp) {
 				// spravne
 				this._gameData.correct++;
-				this._showInfo(`Success, note was ${toneTxt}`, true);
+				this._showInfo(`Success, tone was ${toneTxt}`, true);
 				clearTimeout(this._gameData.timerID);
 				this._gameData.timerID = null;
 				this._guessNewNote();
@@ -436,7 +436,7 @@ class Game {
 			isSharp
 		};
 		this._gameData.ind++;
-		this._gameData.timerID = setTimeout(() => {return
+		this._gameData.timerID = setTimeout(() => {
 			this._gameData.timerID = null;
 			// chyba, nebyla poresena v casovem limitu
 			this._gameData.wrong++;

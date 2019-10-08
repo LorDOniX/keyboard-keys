@@ -1,11 +1,13 @@
 import Learn from "./learn";
 import Game from "./game";
+import GameNames from "./game-names";
 import { domCreate } from "utils";
 
 class Main {
 	constructor() {
 		this._learn = new Learn();
 		this._game = new Game();
+		this._gameNames = new GameNames();
 		this._active = null;
 		this._tabsData = [{
 			name: "Learn",
@@ -15,6 +17,10 @@ class Main {
 			name: "Game",
 			inst: this._game,
 			el: this._game.container
+		}, {
+			name: "Game names",
+			inst: this._gameNames,
+			el: this._gameNames.container
 		}];
 
 		let tabs = document.getElementById("tabs");

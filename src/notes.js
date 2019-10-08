@@ -332,7 +332,7 @@ class Notes {
 		if (opts.withTone) {
 			// nazev
 			this._ctx.fillStyle = "#c01";
-			this._ctx.font = "16px Arial";
+			this._ctx.font = "bold 16px Arial";
 			this._ctx.fillText(findData.tone, findData.x + offset + (findData.tone == "B" ? 1 : 0), noteY + CONFIG.noteSize - offset);
 		}
 		else {
