@@ -25,6 +25,16 @@ CHORDS_RULES[CHORDS_KEYS[3]].push(10);
 CHORDS_RULES[CHORDS_KEYS[4]] = CHORDS_RULES[CHORDS_KEYS[0]].slice();
 CHORDS_RULES[CHORDS_KEYS[4]].push(10);
 
+export const C_DUR = "C dur";
+export const FLAT_TO_SHARP_MAPPING = {
+	"Cb": "B",
+	"Db": "C#",
+	"Eb": "D#",
+	"Fb": "E",
+	"Gb": "F#",
+	"Ab": "G#",
+	"Bb": "A#"
+};
 export const KEYS_SIGNATURES = [{
 		name: "Cb dur",
 		tones: ["Cb", "Db", "Eb", "Fb", "Gb", "Ab", "Bb"],
@@ -61,7 +71,7 @@ export const KEYS_SIGNATURES = [{
 		key: "b",
 		count: 1
 	}, {
-		name: "C dur",
+		name: C_DUR,
 		tones: ["C", "D", "E", "F", "G", "A", "B"],
 		key: "#",
 		count: 0
@@ -101,6 +111,11 @@ export const KEYS_SIGNATURES = [{
 		key: "#",
 		count: 7
 }];
+
+export const KEYS_SIGNATURES_OBJ = {};
+KEYS_SIGNATURES.forEach(i => {
+	KEYS_SIGNATURES_OBJ[i.name] = i;
+});
 
 export const NOTES_RANGE = {
 	treble: {

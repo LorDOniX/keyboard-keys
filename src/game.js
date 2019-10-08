@@ -1,6 +1,6 @@
 import Keyboard from "keyboard";
 import Notes from "notes";
-import { NOTES_RANGE, KEYS_SIGNATURES, TONES, ALL_TONES_SHARP } from "conf";
+import { NOTES_RANGE, KEYS_SIGNATURES, TONES, ALL_TONES_SHARP, KEYS_SIGNATURES_OBJ, C_DUR, FLAT_TO_SHARP_MAPPING } from "conf";
 import { domCreate } from "utils";
 
 const DATA = {
@@ -8,9 +8,13 @@ const DATA = {
 	bassRange: ["C2", "C1"],
 	notesRange: ["Only treble", "Only bass", "Full"],
 	notesCount: [25, 50, 75, 100],
-	notesTime: [1, 2, 3, 4, 5, 10, 15, 20, 25, 30],
-	notesType: ["Non sharp", "Sharp"]
+	notesTime: [5, 10, 15, 20, 25, 30],
+	notesType: ["Non sharp", "Sharp"],
+	notesShow: ["Empty", "With tone"],
+	sounds: ["With sound", "No sound"]
 };
+
+const TIMEOUT_BETWEEN = 5000;
 
 class Game {
 	constructor() {
@@ -19,13 +23,12 @@ class Game {
 		this._buildDom();
 		// nastaveni
 		this._keyboard = new Keyboard(this._dom.keyboard, key => {
-			if (!this._gameData.curNote) return;
+			if (!this._gameData.curNote || this._gameData.guessTimerID) return;
 
 			let tone = key.tone;
 			let octave = key.octave;
 			let isSharp = false;
 			let toneTxt = `${tone}${octave}`;
-			let messageTxt = "";
 
 			if (Array.isArray(key.tone)) {
 				tone = key.tone[0].replace("#", "");
@@ -33,33 +36,58 @@ class Game {
 				toneTxt = `${key.tone[0]}${octave}, ${key.tone[1]}${octave}`;
 			}
 
+			let signatureKey = this._dom.selectSignature.value;
+			let signature = KEYS_SIGNATURES_OBJ[signatureKey];
+
+			if (signature.key == "#" && signature.count > 0) {
+				let cDur = KEYS_SIGNATURES_OBJ[C_DUR];
+				let ind = cDur.tones.indexOf(tone);
+				let sigTone = signature.tones[ind];
+
+				if (sigTone != tone) {
+					isSharp = true;
+				}
+			}
+			else if (signature.key == "b" && signature.count > 0) {
+				// b, Cb => B a octave--
+				let cDur = KEYS_SIGNATURES_OBJ[C_DUR];
+				let ind = cDur.tones.indexOf(tone);
+				let sigTone = signature.tones[ind];
+
+				if (sigTone != tone) {
+					tone = FLAT_TO_SHARP_MAPPING[sigTone];
+
+					if (sigTone == "Cb") octave--;
+					if (tone.indexOf("#") != -1) {
+						tone = tone.replace("#", "");
+						isSharp = true;
+					}
+				}
+			}
+
 			if (tone == this._gameData.curNote.tone && octave == this._gameData.curNote.octave && isSharp == this._gameData.curNote.isSharp) {
 				// spravne
 				this._gameData.correct++;
-				messageTxt = `Success, note was ${toneTxt}`;
+				this._showInfo(`Success, note was ${toneTxt}`, true);
 				clearTimeout(this._gameData.timerID);
 				this._gameData.timerID = null;
-
-				// chvilku pockame na dalsi notu
-				setTimeout(() => {
-					this._gameCycle();
-				}, 2000);
+				this._guessNewNote();
 			}
 			else {
 				this._gameData.wrong++;
-				messageTxt = "Wrong, the note is incorrect!";
+				this._showInfo("Wrong, the note is incorrect!", false);
 			}
-
-			this._dom.infoPanel.textContent = `${messageTxt} - order ${this._gameData.count - this._gameData.notes.length}/${this._gameData.count} correct ${this._gameData.correct} wrong ${this._gameData.wrong}`;
 		});
 		this._notesTreble = new Notes(this._dom.notesTreble, false, NOTES_RANGE);
 		this._notesBass = new Notes(this._dom.notesBass, true, NOTES_RANGE);
 		this._gameData = {
 			time: 0,
+			ind: 0,
 			count: 0,
 			correct: 0,
 			wrong: 0,
 			timerID: null,
+			guessTimerID: null,
 			notes: [],
 			curNote: null
 		};
@@ -216,6 +244,47 @@ class Game {
 					}]
 				}, {
 					el: "span",
+					child: ["Notes show", {
+						el: "select",
+						child: DATA.notesShow.map((item, ind) => {
+							return {
+								el: "option",
+								value: ind,
+								text: item
+							};
+						}),
+						_export: "selectNotesShow"
+					}]
+				}, {
+					el: "span",
+					child: ["Sound", {
+						el: "select",
+						child: DATA.sounds.map((item, ind) => {
+							return {
+								el: "option",
+								value: ind,
+								text: item
+							};
+						}),
+						_export: "selectSound"
+					}]
+				}, {
+					el: "span",
+					child: {
+						el: "button",
+						text: "Easy mode",
+						onclick: () => {
+							this._dom.selectTrebleRange.value = DATA.trebleRange[0];
+							this._dom.selectBassRange.value = DATA.bassRange[0];
+							this._dom.selectNotesRange.value = 0;
+							this._dom.selectNotesCount.value = DATA.notesCount[1];
+							this._dom.selectNotesTime.value = DATA.notesTime[1];
+							this._dom.selectNotesType.value = 0;
+							this._dom.selectNotesShow.value = 1;
+						}
+					}
+				}, {
+					el: "span",
 					child: {
 						el: "button",
 						text: "Start",
@@ -225,27 +294,44 @@ class Game {
 						_export: "btnStart"
 					}
 				}]
+			}, {
+				el: "audio",
+				_export: "audio",
+				autoplay: false,
+				loop: false
 			}]
 		}, exportObj);
 
 		Object.assign(this._dom, exportObj);
 		// defaultni hodnoty
-		this._dom.selectSignature.value = KEYS_SIGNATURES.filter(i => i.key == "#" && i.count == 0)[0].name;
+		this._dom.selectSignature.value = C_DUR;
 		this._dom.selectTrebleRange.value = DATA.trebleRange[DATA.trebleRange.length - 1];
 		this._dom.selectBassRange.value = DATA.bassRange[DATA.bassRange.length - 1];
 		this._dom.selectNotesRange.value = DATA.notesRange.length - 1;
 		this._dom.selectNotesCount.value = DATA.notesCount[1];
-		this._dom.selectNotesTime.value = DATA.notesTime[4];
+		this._dom.selectNotesTime.value = DATA.notesTime[0];
 		this._dom.selectNotesType.value = DATA.notesType.length - 1;
+		this._dom.selectNotesShow.value = 0;
+		this._dom.selectSound.value = 1;
 	}
 
 	_startGame() {
 		// reset
 		this.show();
+
+		if (this._gameData.guessTimerID) {
+			clearTimeout(this._gameData.guessTimerID);
+			this._gameData.guessTimerID = null;
+		}
+
+		if (this._gameData.timerID) {
+			clearTimeout(this._gameData.timerID);
+			this._gameData.timerID = null;
+		}
+
 		// nagenerujeme noty
 		let time = parseFloat(this._dom.selectNotesTime.value);
 		let count = parseFloat(this._dom.selectNotesCount.value);
-		//let key = this._dom.selectSignature.value; todo
 		let notes = this._generateNotes();
 		let gameNotes = [];
 
@@ -254,6 +340,7 @@ class Game {
 			gameNotes.push(notes[ind]);
 		}
 
+		this._gameData.ind = 0;
 		this._gameData.count = count;
 		this._gameData.time = time;
 		this._gameData.correct = 0;
@@ -263,6 +350,7 @@ class Game {
 		this._gameData.curNote = null;
 
 		this._gameCycle();
+		this._showInfo("Game has started!");
 	}
 
 	_generateNotes() {
@@ -312,11 +400,12 @@ class Game {
 	_gameCycle() {
 		// nota
 		if (!this._gameData.notes.length) {
-			console.log("end game");
+			this._showInfo("Finish");
 			console.log(this._gameData);
 			return;
 		}
 
+		let withTone = this._dom.selectNotesShow.value == 1;
 		let note = this._gameData.notes.shift();
 		let isSharp = false;
 
@@ -331,13 +420,13 @@ class Game {
 		if (note.octave < 4) {
 			this._notesBass.drawNote(note.tone, note.octave, {
 				isSharp,
-				withTone: false
+				withTone
 			});
 		}
 		else {
 			this._notesTreble.drawNote(note.tone, note.octave, {
 				isSharp,
-				withTone: false
+				withTone
 			});
 		}
 
@@ -346,15 +435,44 @@ class Game {
 			octave: note.octave,
 			isSharp
 		};
-
-		// infoPanel
-		// timer
-		this._gameData.timerID = setTimeout(() => {
+		this._gameData.ind++;
+		this._gameData.timerID = setTimeout(() => {return
 			this._gameData.timerID = null;
 			// chyba, nebyla poresena v casovem limitu
 			this._gameData.wrong++;
-			this._gameCycle();
+			this._showInfo(`Note ${this._gameData.curNote.tone}${this._gameData.curNote.octave} was not set!`, false);
+			this._guessNewNote();
 		}, this._gameData.time * 1000);
+	}
+
+	_guessNewNote() {
+		// chvilku pockame na dalsi notu
+		this._gameData.guessTimerID = setTimeout(() => {
+			this._gameData.guessTimerID = null;
+			this._notesTreble.redraw();
+			this._notesBass.redraw();
+			this._keyboard.redraw();
+			this._showInfo("Guess a new note");
+			this._gameCycle();
+		}, TIMEOUT_BETWEEN);
+	}
+
+	_showInfo(msg = "", state) {
+		this._dom.infoPanel.classList.remove("correct");
+		this._dom.infoPanel.classList.remove("wrong");
+
+		if (typeof state === "boolean") {
+			this._dom.infoPanel.classList.add(state ? "correct" : "wrong");
+
+			if (this._dom.selectSound.value == "0") {
+				this._dom.audio.src = state ? "/sounds/success.mp3" : "/sounds/wrong.mp3";
+				this._dom.audio.loop = false;
+				this._dom.audio.volume = state ? 0.1 : 0.05;
+				this._dom.audio.play();
+			}
+		}
+
+		this._dom.infoPanel.textContent = `${msg} - order ${this._gameData.ind}/${this._gameData.count} correct ${this._gameData.correct} wrong ${this._gameData.wrong}`;
 	}
 };
 

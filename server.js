@@ -7,6 +7,7 @@ const port = process.env.PORT || 8004;
 // paths
 app.use("/dist", express.static(path.join(__dirname, 'dist')));
 app.use("/img", express.static(path.join(__dirname, 'img')));
+app.use("/sounds", express.static(path.join(__dirname, 'sounds')));
 app.use("/js", express.static(path.join(__dirname, 'js')));
 
 // default
