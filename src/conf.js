@@ -101,3 +101,57 @@ export const KEYS_SIGNATURES = [{
 		key: "#",
 		count: 7
 }];
+
+export const NOTES_RANGE = {
+	treble: {
+		top: {
+			helpLine: 9,
+			tone: "C",
+			octave: 8
+		},
+		bottom: {
+			helpLine: 1,
+			tone: "C",
+			octave: 4
+		}
+	},
+	bass: {
+		top: {
+			helpLine: 1,
+			tone: "C",
+			octave: 4
+		},
+		bottom: {
+			helpLine: 6,
+			tone: "B",
+			octave: 0
+		}
+	}
+};
+
+export const NOTES_INC_RANGE = {
+	treble: {
+		top: {
+			helpLine: 9,
+			tone: "C",
+			octave: 8
+		},
+		bottom: {
+			helpLine: 2,
+			tone: "A",
+			octave: 3
+		}
+	},
+	bass: {
+		top: {
+			helpLine: 2,
+			tone: "E",
+			octave: 4
+		},
+		bottom: {
+			helpLine: 6,
+			tone: "B",
+			octave: 0
+		}
+	}
+};

@@ -9,22 +9,82 @@ body {
 	max-width: 1024px;
 	background: #fff;
 
-	#info {
-		h1 {
-			padding-left: 35px;
-			margin: 0;
+	#tabs {
+		height: 30px;
+		background: #eee;
+
+		span {
+			display: inline-block;
+			vertical-align: top;
+			height: 100%;
+			width: 100px;
+			border: 1px solid black;
+			border-left: none;
+			text-align: center;
+			line-height: 30px;
+			box-sizing: border-box;
+			cursor: pointer;
+
+			&:first-child {
+				border-left: 1px solid black;
+			}
+
+			&.active {
+				background: #c0ecde;
+			}
 		}
 	}
-}
 
-#control,
-#signaturesCont {
-	> div {
-		display: inline-block;
-		vertical-align: top;
+	#tabContent {
+		padding-top: 25px;
+
+		.tab {
+			&.hide {
+				display: none;
+			}
+	
+			&.learn {
+				#info {
+					h1 {
+						padding-left: 35px;
+						margin: 0;
+					}
+				}
+	
+				#control,
+				#signaturesCont {
+					> div {
+						display: inline-block;
+						vertical-align: top;
+					}
+				}
+	
+				#signaturesCont {
+					margin-top: 5px;
+				}
+			}
+
+			&.game {
+				h1 {
+					padding-left: 35px;
+					margin: 0;
+				}
+				
+				.game-control {
+					> div {
+						display: inline-block;
+						vertical-align: top;
+					}
+
+					span {
+						margin-right: 10px;
+					}
+
+					select {
+						margin-left: 5px;
+					}
+				}
+			}
+		}
 	}
-}
-
-#signaturesCont {
-	margin-top: 5px;
 }

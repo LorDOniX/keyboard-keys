@@ -31,37 +31,11 @@ const CONFIG = {
 	}
 };
 
-const NOTES = {
-	treble: {
-		top: {
-			helpLine: 9,
-			tone: "C",
-			octave: 8
-		},
-		bottom: {
-			helpLine: 2,
-			tone: "A",
-			octave: 3
-		}
-	},
-	bass: {
-		top: {
-			helpLine: 2,
-			tone: "E",
-			octave: 4
-		},
-		bottom: {
-			helpLine: 6,
-			tone: "B",
-			octave: 0
-		}
-	}
-}
-
 class Notes {
-	constructor(parentEl, isBass, onClick) {
+	constructor(parentEl, isBass, notesRange, onClick) {
 		this._parentEl = parentEl;
 		this._isBass = isBass;
+		this._notesRange = notesRange;
 		this._onClick = onClick;
 		this._canvas = document.createElement("canvas");
 		this._ctx = this._canvas.getContext("2d");
@@ -124,7 +98,7 @@ class Notes {
 
 			// spocitame
 			let y = CONFIG.paddingTopBottom;
-			let mainItem = NOTES[this._isBass ? "bass" : "treble"];
+			let mainItem = this._notesRange[this._isBass ? "bass" : "treble"];
 			let linesCount = mainItem.top.helpLine + CONFIG.lines + mainItem.bottom.helpLine;
 			let toneInd = TONES.indexOf(mainItem.top.tone);
 			let octave = mainItem.top.octave;
@@ -178,9 +152,15 @@ class Notes {
 	}
 
 	// C4 -> treble, pod C4 bass
-	drawNote(tone, octave, isSharp, x) {
+	drawNote(tone, octave, optsArg) {
+		let opts = Object.assign({
+			withTone: true,
+			isSharp: false,
+			x: undefined
+		}, optsArg);
+
 		if (this._currentX > this._canvas.width - 2 * CONFIG.paddingLeftRight) {
-			this._currentX = CONFIG.startX;
+			this.resetOffset();
 			this.redraw();
 		}
 
@@ -188,14 +168,15 @@ class Notes {
 
 		if (!findData) return;
 
-		if (typeof x === "number") {
+		if (typeof opts.x === "number") {
 			this._currentX = Math.max(x - CONFIG.noteSize / 2, CONFIG.startX);
+			delete opts.x;
 		}
 
-		this._drawNote(findData, isSharp);
+		this._drawNote(findData, opts);
 	}
 
-	drawNotes(notes) {
+	drawNotes(notes, disableTone) {
 		let sharpStartAdd = 15;
 		let nonSharpOffset = 15;
 		let hasSharp = false;
@@ -225,7 +206,10 @@ class Notes {
 				i.findData.x += nonSharpOffset;
 			}
 
-			this._drawNote(i.findData, i.isSharp);
+			this._drawNote(i.findData, {
+				isSharp: i.isSharp,
+				withTone: !disableTone
+			});
 		});
 
 		if (hasSharp) {
@@ -235,6 +219,10 @@ class Notes {
 
 	moveOffset() {
 		this._currentX += CONFIG.noteSize + 21;
+	}
+
+	resetOffset() {
+		this._currentX = CONFIG.startX;
 	}
 
 	_drawBackground() {
@@ -319,7 +307,47 @@ class Notes {
 		} : null);
 	}
 
-	_drawNote(findData, isSharp) {
+	_drawNote(findData, optsArg) {
+		let opts = Object.assign({
+			withTone: true,
+			isSharp: false
+		}, optsArg);
+
+		if (opts.withTone) {
+			this._drawNoteHelpLines(findData);
+		}
+
+		// nota
+		let lineHalfHeight = CONFIG.lineDistance / 2;
+		let noteY = findData.find.y + (findData.exact ? 0 : findData.direction * lineHalfHeight);
+
+		this._ctx.beginPath();
+		this._ctx.arc(findData.x + CONFIG.noteSize, noteY, CONFIG.noteSize, 0, 2 * Math.PI);
+		this._ctx.fillStyle = "#fff";
+		this._ctx.fill();
+		this._ctx.stroke();
+
+		let offset = 2;
+
+		if (opts.withTone) {
+			// nazev
+			this._ctx.fillStyle = "#c01";
+			this._ctx.font = "16px Arial";
+			this._ctx.fillText(findData.tone, findData.x + offset + (findData.tone == "B" ? 1 : 0), noteY + CONFIG.noteSize - offset);
+		}
+		else {
+			this._drawNoteHelpLines(findData);
+		}
+
+		// krizek?
+		if (opts.isSharp) {
+			this._ctx.fillStyle = "#008000";
+			this._ctx.font = "bold 16px Arial";
+			this._ctx.fillText("#", findData.x - 10, noteY + CONFIG.noteSize - offset);
+		}
+	}
+
+	_drawNoteHelpLines(findData) {
 		// mrizkovani
 		let lastInd = this._dim.mainLines[this._dim.mainLines.length - 1].ind;
 
@@ -348,29 +376,6 @@ class Notes {
 			}
 
 			this._ctx.lineWidth = 1;
-		}
-
-		// nota
-		let lineHalfHeight = CONFIG.lineDistance / 2;
-		let noteY = findData.find.y + (findData.exact ? 0 : findData.direction * lineHalfHeight);
-
-		this._ctx.beginPath();
-		this._ctx.arc(findData.x + CONFIG.noteSize, noteY, CONFIG.noteSize, 0, 2 * Math.PI);
-		this._ctx.fillStyle = "#fff";
-		this._ctx.fill();
-		this._ctx.stroke();
-		// nazev
-		let offset = 2;
-
-		this._ctx.fillStyle = "#c01";
-		this._ctx.font = "16px Arial";
-		this._ctx.fillText(findData.tone, findData.x + offset + (findData.tone == "B" ? 1 : 0), noteY + CONFIG.noteSize - offset);
-
-		// krizek?
-		if (isSharp) {
-			this._ctx.fillStyle = "#008000";
-			this._ctx.font = "bold 16px Arial";
-			this._ctx.fillText("#", findData.x - 10, noteY + CONFIG.noteSize - offset);
 		}
 	}
 }

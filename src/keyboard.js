@@ -37,6 +37,10 @@ class Keyboard {
 		}
 	}
 
+	redraw() {
+		this._drawBackground();
+	}
+
 	drawKey(tone, octave) {
 		if (this._keyboardData) {
 			this._drawBackground();

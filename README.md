@@ -12,11 +12,14 @@
 * middle C - main key, it will be shown in treble and bass section
 * chords - start octave, chord type and chord main tone will be displayed in notes section and correct keys on the keyboard
 * signature - number of # and b in the name, signature keys will be shown on the keyboard
+* game section - guess right notes according to the notes
 ## Usage
 * you need only nodejs to run this webpage
 * `npm install`
 * in seperate console window: `npm run watch`
 * in seperate console window: `node server.js`
 * in browser navigate to webpage: `http://localhost:8004/`
+## TODO
+* game - key signature
 ## Licence
 * free to use, any part of this source code can be used in your own projects
