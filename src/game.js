@@ -125,11 +125,14 @@ class Game {
 			_export: "tab",
 			child: [{
 				el: "div",
-				child: {
+				child: [{
 					el: "h1",
 					text: "Info panel",
 					_export: "infoPanel"
-				}
+				}, {
+					el: "p",
+					_export: "allNotes"
+				}]
 			}, {
 				el: "div",
 				id: "notesTreble",
@@ -287,6 +290,21 @@ class Game {
 					el: "span",
 					child: {
 						el: "button",
+						text: "Easy mode full",
+						onclick: () => {
+							this._dom.selectTrebleRange.value = DATA.trebleRange[0];
+							this._dom.selectBassRange.value = DATA.bassRange[0];
+							this._dom.selectNotesRange.value = 2;
+							this._dom.selectNotesCount.value = DATA.notesCount[1];
+							this._dom.selectNotesTime.value = DATA.notesTime[1];
+							this._dom.selectNotesType.value = 0;
+							this._dom.selectNotesShow.value = 1;
+						}
+					}
+				}, {
+					el: "span",
+					child: {
+						el: "button",
 						text: "Start",
 						onclick: () => {
 							this._startGame();
@@ -335,9 +353,14 @@ class Game {
 		let notes = this._generateNotes();
 		let gameNotes = [];
 
-		for (let i = 0; i < count; i++) {
+		while (true) {
 			let ind = Math.floor(Math.random() * (notes.length - 1));
-			gameNotes.push(notes[ind]);
+
+			if (!gameNotes.length || (gameNotes.length && gameNotes[gameNotes.length - 1] != notes[ind])) {
+				gameNotes.push(notes[ind]);
+			}
+
+			if (gameNotes.length == count) break;
 		}
 
 		this._gameData.ind = 0;
@@ -407,10 +430,11 @@ class Game {
 
 		let withTone = this._dom.selectNotesShow.value == 1;
 		let note = this._gameData.notes.shift();
+		let tone = note.tone;
 		let isSharp = false;
 
-		if (note.tone.indexOf("#") != -1) {
-			note.tone = note.tone.replace("#", "");
+		if (tone.indexOf("#") != -1) {
+			tone = tone.replace("#", "");
 			isSharp = true;
 		}
 
@@ -418,20 +442,24 @@ class Game {
 		this._notesBass.redraw();
 		
 		if (note.octave < 4) {
-			this._notesBass.drawNote(note.tone, note.octave, {
+			this._notesBass.drawNote(tone, note.octave, {
 				isSharp,
 				withTone
 			});
 		}
 		else {
-			this._notesTreble.drawNote(note.tone, note.octave, {
+			this._notesTreble.drawNote(tone, note.octave, {
 				isSharp,
 				withTone
 			});
 		}
 
+		// info
+		//this._dom.allNotes.textContent = this._gameData.notes.map(i => `${i.tone}${i.octave}`).join(", ");
+		
 		this._gameData.curNote = {
-			tone: note.tone,
+			tone,
+			origTone: note.tone,
 			octave: note.octave,
 			isSharp
 		};
@@ -441,6 +469,7 @@ class Game {
 			// chyba, nebyla poresena v casovem limitu
 			this._gameData.wrong++;
 			this._showInfo(`Note ${this._gameData.curNote.tone}${this._gameData.curNote.octave} was not set!`, false);
+			this._keyboard.drawKey(this._gameData.curNote.origTone , this._gameData.curNote.octave);
 			this._guessNewNote();
 		}, this._gameData.time * 1000);
 	}

@@ -45,7 +45,7 @@ class Main {
 	async _init() {
 		await this._learn.load();
 		await this._game.load();
-		this._setActive(this._tabsData[0].name);
+		this._setActive(localStorage.getItem("keyboardKeysTab") || this._tabsData[0].name);
 	}
 
 	_setActive(name) {
@@ -61,6 +61,7 @@ class Main {
 				}
 
 				this._active = i.inst;
+				localStorage.setItem("keyboardKeysTab", i.name);
 			}
 		});
 	}
