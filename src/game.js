@@ -14,7 +14,7 @@ const DATA = {
 	sounds: ["With sound", "No sound"]
 };
 
-const TIMEOUT_BETWEEN = 5000;
+const GUESS_NEW_NOTE_TIME = 5;
 
 class Game {
 	constructor() {
@@ -69,7 +69,7 @@ class Game {
 				// spravne
 				this._gameData.correct++;
 				this._showInfo(`Success, tone was ${toneTxt}`, true);
-				clearTimeout(this._gameData.timerID);
+				clearInterval(this._gameData.timerID);
 				this._gameData.timerID = null;
 				this._guessNewNote();
 			}
@@ -131,7 +131,8 @@ class Game {
 					_export: "infoPanel"
 				}, {
 					el: "p",
-					_export: "allNotes"
+					class: "time-info",
+					_export: "timeInfo"
 				}]
 			}, {
 				el: "div",
@@ -338,12 +339,12 @@ class Game {
 		this.show();
 
 		if (this._gameData.guessTimerID) {
-			clearTimeout(this._gameData.guessTimerID);
+			clearInterval(this._gameData.guessTimerID);
 			this._gameData.guessTimerID = null;
 		}
 
 		if (this._gameData.timerID) {
-			clearTimeout(this._gameData.timerID);
+			clearInterval(this._gameData.timerID);
 			this._gameData.timerID = null;
 		}
 
@@ -456,7 +457,7 @@ class Game {
 
 		// info
 		//this._dom.allNotes.textContent = this._gameData.notes.map(i => `${i.tone}${i.octave}`).join(", ");
-		
+
 		this._gameData.curNote = {
 			tone,
 			origTone: note.tone,
@@ -464,26 +465,51 @@ class Game {
 			isSharp
 		};
 		this._gameData.ind++;
-		this._gameData.timerID = setTimeout(() => {
-			this._gameData.timerID = null;
-			// chyba, nebyla poresena v casovem limitu
-			this._gameData.wrong++;
-			this._showInfo(`Note ${this._gameData.curNote.tone}${this._gameData.curNote.octave} was not set!`, false);
-			this._keyboard.drawKey(this._gameData.curNote.origTone , this._gameData.curNote.octave);
-			this._guessNewNote();
-		}, this._gameData.time * 1000);
+
+		let curTime = this._gameData.time - 1;
+
+		this._dom.timeInfo.textContent = `${this._gameData.time}s`;
+
+		this._gameData.timerID = setInterval(() => {
+			this._dom.timeInfo.textContent = `${curTime}s`;
+
+			if (curTime === 0) {
+				clearInterval(this._gameData.timerID);
+				this._gameData.timerID = null;
+				// chyba, nebyla poresena v casovem limitu
+				this._gameData.wrong++;
+				this._showInfo(`Note ${this._gameData.curNote.tone}${this._gameData.curNote.octave} was not set!`, false);
+				this._keyboard.drawKey(this._gameData.curNote.origTone , this._gameData.curNote.octave);
+				this._guessNewNote();
+				return;
+			}
+
+			curTime--;
+		}, 1000);
 	}
 
 	_guessNewNote() {
+		let curTime = GUESS_NEW_NOTE_TIME - 1;
+
+		this._dom.timeInfo.textContent = `${GUESS_NEW_NOTE_TIME}s`;
+
 		// chvilku pockame na dalsi notu
-		this._gameData.guessTimerID = setTimeout(() => {
-			this._gameData.guessTimerID = null;
-			this._notesTreble.redraw();
-			this._notesBass.redraw();
-			this._keyboard.redraw();
-			this._showInfo("Guess a new note");
-			this._gameCycle();
-		}, TIMEOUT_BETWEEN);
+		this._gameData.guessTimerID = setInterval(() => {
+			this._dom.timeInfo.textContent = `${curTime}s`;
+
+			if (curTime === 0) {
+				clearInterval(this._gameData.guessTimerID);
+				this._gameData.guessTimerID = null;
+				this._notesTreble.redraw();
+				this._notesBass.redraw();
+				this._keyboard.redraw();
+				this._showInfo("Guess a new note");
+				this._gameCycle();
+				return;
+			}
+
+			curTime--;
+		}, 1000);
 	}
 
 	_showInfo(msg = "", state) {
