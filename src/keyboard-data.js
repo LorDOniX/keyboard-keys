@@ -1,5 +1,6 @@
 import { TONES, HALF_TONES, OCTAVES } from "conf";
 
+// key definitions - mapping to image
 const WHITE_KEY = {
 	height: 292,
 	x: 18,
@@ -18,6 +19,11 @@ const BLACK_KEY = {
 };
 
 class KeyboardData {
+	/**
+	 * Ratio - for image resize.
+	 *
+	 * @param   {Number}  ratio = 1
+	 */
 	constructor(ratio = 1) {
 		this._ratio = ratio;
 		this._white = [];
@@ -27,16 +33,33 @@ class KeyboardData {
 		this._setBlack();
 	}
 
+	/**
+	 * Get white keys.
+	 *
+	 * @return  {Array}
+	 */
 	get white() {
 		return this._white;
 	}
 
+	/**
+	 * Get black keys.
+	 *
+	 * @return  {Array}
+	 */
 	get black() {
 		return this._black;
 	}
 
+	/**
+	 * Get key on position
+	 * 
+	 * @param {Number} x Position on axis x
+	 * @param {Number} y Position on axis y
+	 * @return  {Object}
+	 */
 	getKey(x, y) {
-		// prohledame cerne, pak bile
+		// search in black, then in white
 		let find = null;
 
 		for (let blackKey of this._black) {
@@ -58,6 +81,13 @@ class KeyboardData {
 		return find;
 	}
 
+	/**
+	 * Find tone by tone and octave
+	 *
+	 * @param   {String}  tone  C...
+	 * @param   {Number}  octave 0-8
+	 * @return  {Object}
+	 */
 	findByTone(tone, octave) {
 		let isBlack = false;
 		let isSharp = false;
@@ -77,6 +107,9 @@ class KeyboardData {
 		return (tones.length ? tones[0] : null);
 	}
 
+	/**
+	 * Set white keys.
+	 */
 	_setWhite() {
 		let lastX = WHITE_KEY.x;
 		let octave = 0;
@@ -87,7 +120,7 @@ class KeyboardData {
 		this._white.push(this._getItem(lastX, WHITE_KEY.y, WHITE_KEY.startPosition[1], WHITE_KEY.height, false, TONES[6], octave));
 		lastX += WHITE_KEY.startPosition[1];
 
-		// oktavy
+		// octaves
 		for (let i = 0; i < OCTAVES; i++) {
 			octave++
 			WHITE_KEY.repeat.forEach((key, ind) => {
@@ -100,6 +133,9 @@ class KeyboardData {
 		this._white.push(this._getItem(lastX, WHITE_KEY.y, WHITE_KEY.startPosition[0], WHITE_KEY.height, false, TONES[0], octave));
 	}
 
+	/**
+	 * Set black keys.
+	 */
 	_setBlack() {
 		let octave = 0;
 
@@ -107,7 +143,7 @@ class KeyboardData {
 		this._black.push(this._getItem(BLACK_KEY.startPosition[0], BLACK_KEY.y, BLACK_KEY.width, BLACK_KEY.height, true, HALF_TONES[4], octave));
 		let lastX = BLACK_KEY.startPosition[1];
 
-		// oktavy
+		// octaves
 		for (let i = 0; i < OCTAVES; i++) {
 			octave++
 			BLACK_KEY.repeat.forEach((key, ind) => {
@@ -117,6 +153,18 @@ class KeyboardData {
 		}
 	}
 
+	/**
+	 * Get item on position.
+	 *
+	 * @param {Number} x Position on axis x
+	 * @param {Number} y Position on axis y
+	 * @param   {Number}  width  Area width
+	 * @param   {Number}  height Area height
+	 * @param   {Boolean}  isBlack Is key black?
+	 * @param   {String}  tone  C...
+	 * @param   {Number}  octave 0-8
+	 * @return  {Object}
+	 */
 	_getItem(x, y, width, height, isBlack, tone = "", octave = 0) {
 		x *= this._ratio;
 		y *= this._ratio;

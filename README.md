@@ -19,7 +19,5 @@
 * in seperate console window: `npm run watch`
 * in seperate console window: `node server.js`
 * in browser navigate to webpage: `http://localhost:8004/`
-## TODO
-* game - key signature
 ## Licence
 * free to use, any part of this source code can be used in your own projects

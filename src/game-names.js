@@ -2,15 +2,15 @@ import Keyboard from "keyboard";
 import { TONES } from "conf";
 import { domCreate } from "utils";
 
+// timeout [ms]
 const TIMEOUT = 5000;
-const TIMEOUT_BETWEEN = 5000;
 
 class GameNames {
 	constructor() {
 		this._dom = {};
 		// build dom
 		this._buildDom();
-		// nastaveni
+		// settings
 		this._currentTone = "";
 		this._timeoutId = null;
 		this._guessTimeoutID = null;
@@ -36,15 +36,26 @@ class GameNames {
 		});
 	}
 
+	/**
+	 * Get tab container.
+	 *
+	 * @return  {Element}
+	 */
 	get container() {
 		return this._dom.tab;
 	}
 
+	/**
+	 * Show tab.
+	 */
 	show() {
 		this._keyboard.syncPort();
 		this._keyboard.redraw();
 	}
 
+	/**
+	 * Hide tab.
+	 */
 	hide() {
 		if (this._timeoutId) {
 			clearInterval(this._timeoutId);
@@ -55,11 +66,13 @@ class GameNames {
 			clearInterval(this._guessTimeoutID);
 			this._guessTimeoutID = null;
 		}
+
+		this._showInfo("Info panel");
 	}
 
-	async load() {
-	}
-
+	/**
+	 * Create elements.
+	 */
 	_buildDom() {
 		let exportObj = {};
 
@@ -98,6 +111,9 @@ class GameNames {
 		Object.assign(this._dom, exportObj);
 	}
 
+	/**
+	 * Game start.
+	 */
 	_startGame() {
 		// reset
 		this.show();
@@ -116,6 +132,9 @@ class GameNames {
 		this._gameCycle();
 	}
 
+	/**
+	 * One game cycle.
+	 */
 	_gameCycle() {
 		let newTone = this._currentTone;
 		
@@ -129,22 +148,31 @@ class GameNames {
 		this._showInfo(`Find tone ${this._currentTone}`);
 		this._timeoutId = setTimeout(() => {
 			this._timeoutId = null;
-			// chyba, nebyla poresena v casovem limitu
+			// error, note was not found
 			this._showInfo(`Tone ${this._currentTone} was not found!`, false);
 			this._guessNewNote();
 		}, TIMEOUT);
 	}
 
+	/**
+	 * Guess a new note.
+	 */
 	_guessNewNote() {
-		// chvilku pockame na dalsi notu
+		// wait a while for the next note
 		this._guessTimeoutID = setTimeout(() => {
 			this._guessTimeoutID = null;
 			this._keyboard.redraw();
 			this._showInfo("Guess a new note");
 			this._gameCycle();
-		}, TIMEOUT_BETWEEN);
+		}, TIMEOUT);
 	}
 
+	/**
+	 * Show info status.
+	 *
+	 * @param   {String}  msg  Message
+	 * @param   {Boolean}  [state] State ok/error
+	 */
 	_showInfo(msg = "", state) {
 		this._dom.infoPanel.classList.remove("correct");
 		this._dom.infoPanel.classList.remove("wrong");

@@ -21,7 +21,7 @@ class Game {
 		this._dom = {};
 		// build dom
 		this._buildDom();
-		// nastaveni
+		// settings
 		this._keyboard = new Keyboard(this._dom.keyboard, key => {
 			if (!this._gameData.curNote || this._gameData.guessTimerID) return;
 
@@ -66,7 +66,6 @@ class Game {
 			}
 
 			if (tone == this._gameData.curNote.tone && octave == this._gameData.curNote.octave && isSharp == this._gameData.curNote.isSharp) {
-				// spravne
 				this._gameData.correct++;
 				this._showInfo(`Success, tone was ${toneTxt}`, true);
 				clearInterval(this._gameData.timerID);
@@ -93,10 +92,18 @@ class Game {
 		};
 	}
 
+	/**
+	 * Get tab container.
+	 *
+	 * @return  {Element}
+	 */
 	get container() {
 		return this._dom.tab;
 	}
 
+	/**
+	 * Show tab.
+	 */
 	show() {
 		this._keyboard.syncPort();
 		this._notesTreble.syncPort();
@@ -108,14 +115,27 @@ class Game {
 		this._notesBass.redraw();
 	}
 
+	/**
+	 * Hide tab.
+	 */
 	hide() {
+		if (this._gameData.timerID) {
+			clearInterval(this._gameData.timerID);
+			this._gameData.timerID = null;
+		}
+
+		if (this._gameData.guessTimerID) {
+			clearInterval(this._gameData.guessTimerID);
+			this._gameData.guessTimerID = null;
+		}
+
+		this._dom.infoPanel.textContent = "Info panel";
+		this._dom.timeInfo.textContent = "";
 	}
 
-	async load() {
-		await this._notesTreble.load();
-		await this._notesBass.load();
-	}
-
+	/**
+	 * Create elements.
+	 */
 	_buildDom() {
 		let exportObj = {};
 
@@ -322,7 +342,7 @@ class Game {
 		}, exportObj);
 
 		Object.assign(this._dom, exportObj);
-		// defaultni hodnoty
+		// default values
 		this._dom.selectSignature.value = C_DUR;
 		this._dom.selectTrebleRange.value = DATA.trebleRange[DATA.trebleRange.length - 1];
 		this._dom.selectBassRange.value = DATA.bassRange[DATA.bassRange.length - 1];
@@ -334,6 +354,9 @@ class Game {
 		this._dom.selectSound.value = 1;
 	}
 
+	/**
+	 * Game start.
+	 */
 	_startGame() {
 		// reset
 		this.show();
@@ -348,7 +371,7 @@ class Game {
 			this._gameData.timerID = null;
 		}
 
-		// nagenerujeme noty
+		// generate notes
 		let time = parseFloat(this._dom.selectNotesTime.value);
 		let count = parseFloat(this._dom.selectNotesCount.value);
 		let notes = this._generateNotes();
@@ -377,8 +400,11 @@ class Game {
 		this._showInfo("Game has started!");
 	}
 
+	/**
+	 * Generate notes.
+	 */
 	_generateNotes() {
-		// nagenerujeme noty
+		// generate notes
 		let value = this._dom.selectNotesRange.value;
 		let trebleTone = this._dom.selectTrebleRange.value;
 		let bassTone = this._dom.selectBassRange.value;
@@ -386,15 +412,15 @@ class Game {
 		let middleC = "C4";
 		let range = [];
 
-		// pouze treble
+		// only treble
 		if (value == "0") {
 			range.push(middleC, trebleTone);
 		}
-		// pouze bass
+		// only bass
 		else if (value == "1") {
 			range.push(bassTone, middleC);
 		}
-		// plny
+		// full
 		else {
 			range.push(bassTone, trebleTone);
 		}
@@ -421,8 +447,11 @@ class Game {
 		return allNotes;
 	}
 
+	/**
+	 * One game cycle.
+	 */
 	_gameCycle() {
-		// nota
+		// note
 		if (!this._gameData.notes.length) {
 			this._showInfo("Finish");
 			console.log(this._gameData);
@@ -468,15 +497,15 @@ class Game {
 
 		let curTime = this._gameData.time - 1;
 
-		this._dom.timeInfo.textContent = `${this._gameData.time}s`;
+		this._dom.timeInfo.textContent = `${this._gameData.time} s`;
 
 		this._gameData.timerID = setInterval(() => {
-			this._dom.timeInfo.textContent = `${curTime}s`;
+			this._dom.timeInfo.textContent = `${curTime} s`;
 
 			if (curTime === 0) {
 				clearInterval(this._gameData.timerID);
 				this._gameData.timerID = null;
-				// chyba, nebyla poresena v casovem limitu
+				// error, note was not found
 				this._gameData.wrong++;
 				this._showInfo(`Note ${this._gameData.curNote.tone}${this._gameData.curNote.octave} was not set!`, false);
 				this._keyboard.drawKey(this._gameData.curNote.origTone , this._gameData.curNote.octave);
@@ -488,14 +517,17 @@ class Game {
 		}, 1000);
 	}
 
+	/**
+	 * Guess a new note.
+	 */
 	_guessNewNote() {
 		let curTime = GUESS_NEW_NOTE_TIME - 1;
 
-		this._dom.timeInfo.textContent = `${GUESS_NEW_NOTE_TIME}s`;
+		this._dom.timeInfo.textContent = `${GUESS_NEW_NOTE_TIME} s`;
 
-		// chvilku pockame na dalsi notu
+		// wait a while for the next note
 		this._gameData.guessTimerID = setInterval(() => {
-			this._dom.timeInfo.textContent = `${curTime}s`;
+			this._dom.timeInfo.textContent = `${curTime} s`;
 
 			if (curTime === 0) {
 				clearInterval(this._gameData.guessTimerID);
@@ -512,6 +544,12 @@ class Game {
 		}, 1000);
 	}
 
+	/**
+	 * Show info status.
+	 *
+	 * @param   {String}  msg  Message
+	 * @param   {Boolean}  [state] State ok/error
+	 */
 	_showInfo(msg = "", state) {
 		this._dom.infoPanel.classList.remove("correct");
 		this._dom.infoPanel.classList.remove("wrong");

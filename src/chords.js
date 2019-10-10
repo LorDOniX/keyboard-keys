@@ -1,6 +1,15 @@
-import { ALL_TONES_SHARP, CHORDS_KEYS, CHORDS_NOTES, CHORDS_RULES } from "conf";
+import { ALL_TONES_SHARP, CHORDS_KEYS, CHORDS_NOTES, CHORDS_RULES, MIDDLE_C } from "conf";
 
 class Chords {
+	/**
+	 * Chords - show chords on the keyboard.
+	 *
+	 * @param   {Main}  owner 
+	 * @param   {Select}  octaveSelectEl  Element for octaves
+	 * @param   {Select}  keySelectEl    Element for keys
+	 * @param   {Select}  noteSelectEl  Element for notes
+	 * @param   {Element}  showBtn  Show button reference
+	 */
 	constructor(owner, octaveSelectEl, keySelectEl, noteSelectEl, showBtn) {
 		this._owner = owner;
 		this._octaveSelectEl = octaveSelectEl;
@@ -13,6 +22,9 @@ class Chords {
 		this._fillSelects();
 	}
 
+	/**
+	 * Fill all selects with values.
+	 */
 	_fillSelects() {
 		// octaves
 		for (let i = 1; i <= 7; i++) {
@@ -38,11 +50,14 @@ class Chords {
 			this._noteSelectEl.appendChild(option);
 		});
 
-		// def. hodnoty
-		this._octaveSelectEl.value = 4;
-		this._noteSelectEl.value = "C";
+		// def. values
+		this._octaveSelectEl.value = MIDDLE_C.octave;
+		this._noteSelectEl.value = MIDDLE_C.tone;
 	}
 
+	/**
+	 * Button click - show chord.
+	 */
 	_showChord() {
 		let octave = parseFloat(this._octaveSelectEl.value);
 		let key = this._keySelectEl.value;

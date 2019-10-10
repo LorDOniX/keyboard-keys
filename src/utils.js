@@ -1,3 +1,9 @@
+/**
+ * Get image from src.
+ *
+ * @param   {String}  src Path to image
+ * @return  {Image}
+ */
 export function getImage(src) {
 	return new Promise((resolve, reject) => {
 		let img = new Image();
@@ -11,6 +17,13 @@ export function getImage(src) {
 	})
 }
 
+/**
+ * Create dom element from config.
+ *
+ * @param   {Object}  config
+ * @param   {Object}  [exported] For DOM references "_export"
+ * @return  {Element}
+ */
 export function domCreate(config, exported) {
 	let el = document.createElement(config.el || "div");
 

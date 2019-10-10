@@ -1,15 +1,18 @@
 import Keyboard from "keyboard";
 import Notes from "notes";
 import Chords from "chords";
-import { KEYS_SIGNATURES, NOTES_INC_RANGE } from "conf";
+import { KEYS_SIGNATURES, NOTES_INC_RANGE, BETWEEN_NOTES_TREBLE, BETWEEN_NOTES_BASS, ON_LINE_NOTES_TREBLE, ON_LINE_NOTES_BASS } from "conf";
 import { domCreate } from "utils";
 
 class Learn {
+	/**
+	 * Lear section for keyboard.
+	 */
 	constructor() {
 		this._dom = {};
 		// build dom
 		this._buildDom();
-		// nastaveni
+		// settings
 		this._keyboard = new Keyboard(this._dom.keyboard, key => {
 			let tone = key.tone;
 			let octave = key.octave;
@@ -51,10 +54,18 @@ class Learn {
 		this._chords = new Chords(this, this._dom.selectOctave, this._dom.selectKey, this._dom.selectNote, this._dom.btnShowChord);
 	}
 
+	/**
+	 * Get tab container.
+	 *
+	 * @return  {Element}
+	 */
 	get container() {
 		return this._dom.tab;
 	}
 
+	/**
+	 * Show tab.
+	 */
 	show() {
 		this._keyboard.syncPort();
 		this._notesTreble.syncPort();
@@ -66,15 +77,17 @@ class Learn {
 		this._notesBass.redraw();
 	}
 
+	/**
+	 * Hide tab.
+	 */
 	hide() {
 		this._dom.h1Tone.textContent = "";
+		this._dom.signatureInfo.textContent = "";
 	}
 
-	async load() {
-		await this._notesTreble.load();
-		await this._notesBass.load();
-	}
-
+	/**
+	 * Create elements.
+	 */
 	_buildDom() {
 		let exportObj = {};
 		let toneControlCb = () => {
@@ -171,36 +184,12 @@ class Learn {
 						onclick: () => {
 							this._dom.h1Tone.textContent = `Between notes`;
 
-							let trebleNotes = [{
-								tone: "F",
-								octave: 4
-							}, {
-								tone: "A",
-								octave: 4
-							}, {
-								tone: "C",
-								octave: 5
-							}, {
-								tone: "E",
-								octave: 5
-							}];
-							let bassNotes = [{
-								tone: "A",
-								octave: 2
-							}, {
-								tone: "C",
-								octave: 3
-							}, {
-								tone: "E",
-								octave: 3
-							}, {
-								tone: "G",
-								octave: 3
-							}];
-							this._keyboard.drawKeys(trebleNotes.concat(bassNotes));
-							this._notesTreble.drawNotes(trebleNotes);
+							let allNotes = [].concat(BETWEEN_NOTES_TREBLE, BETWEEN_NOTES_BASS);
+
+							this._keyboard.drawKeys(allNotes);
+							this._notesTreble.drawNotes(BETWEEN_NOTES_TREBLE);
 							this._notesTreble.moveOffset();
-							this._notesBass.drawNotes(bassNotes);
+							this._notesBass.drawNotes(BETWEEN_NOTES_BASS);
 							this._notesBass.moveOffset();
 						}
 					}, {
@@ -210,47 +199,18 @@ class Learn {
 						onclick: () => {
 							this._dom.h1Tone.textContent = `On lines`;
 
-							let trebleNotes = [{
-								tone: "E",
-								octave: 4
-							}, {
-								tone: "G",
-								octave: 4
-							}, {
-								tone: "B",
-								octave: 4
-							}, {
-								tone: "D",
-								octave: 5
-							}, {
-								tone: "F",
-								octave: 5
-							}];
-							let bassNotes = [{
-								tone: "G",
-								octave: 2
-							}, {
-								tone: "B",
-								octave: 2
-							}, {
-								tone: "D",
-								octave: 3
-							}, {
-								tone: "F",
-								octave: 3
-							}, {
-								tone: "A",
-								octave: 3
-							}];
-							this._keyboard.drawKeys(trebleNotes.concat(bassNotes));
-							this._notesTreble.drawNotes(trebleNotes);
+							let allNotes = [].concat(ON_LINE_NOTES_TREBLE, ON_LINE_NOTES_BASS);
+
+							this._keyboard.drawKeys(allNotes);
+							this._notesTreble.drawNotes(ON_LINE_NOTES_TREBLE);
 							this._notesTreble.moveOffset();
-							this._notesBass.drawNotes(bassNotes);
+							this._notesBass.drawNotes(ON_LINE_NOTES_BASS);
 							this._notesBass.moveOffset();
 						}
 					}]
 				}, {
-					el: "chords",
+					el: "div",
+					class: "chords",
 					child: ["Chords: ", {
 						el: "select",
 						class: "octave",
@@ -318,6 +278,12 @@ class Learn {
 		this._dom.selectSignature.value = KEYS_SIGNATURES.filter(i => i.key == "#" && i.count == 0)[0].name;
 	}
 
+	/**
+	 * Show chord.
+	 *
+	 * @param   {String}  name Message to show
+	 * @param   {Array}  tones array of { tone, octave... }
+	 */
 	showChord(name, tones) {
 		if (!Array.isArray(tones) || !tones.length) return;
 
@@ -334,6 +300,14 @@ class Learn {
 		this._dom.h1Tone.textContent = name + ": " + tones.map(i => `${i.tone}${i.octave}`).join(", ");
 	}
 
+	/**
+	 * Show tone.
+	 *
+	 *@param   {String}  tone  C...
+	 * @param   {Number}  octave 0-8
+	 * @param   {Boolean}  isBass Is bass range?
+	 * @param   {Number}  x Own x position
+	 */
 	_showTone(tone, octave, isBass, x) {
 		this._keyboard.drawKey(tone, octave);
 

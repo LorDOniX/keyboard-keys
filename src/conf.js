@@ -7,10 +7,9 @@ export const CHORDS_KEYS = ["MAJOR", "MINOR", "MAJOR 7th", "MINOR 7th", "DOMINAN
 export const CHORDS_NOTES = ["A", "B", "C", "D", "E", "F", "G", "AbG#", "BbA#", "DbC#", "EbD#", "GbF#"];
 export const CHORDS_RULES = {};
 
-// pravidla pro chords
 // A MAJOR = [A, C#, E], A MINOR = [A, C, E], MAJOR 7TH = [A, C#, E, G#], MINOR 7TH = [A, C, E, G], DOMINANT 7TH = [A, C# E, G]
-// a ind 9, 0, druhy ton 4, treti 7
-// a ind 9, 0, druhy ton 3, treti 7
+// a ind 9, 0, second tone 4, third 7
+// a ind 9, 0, second tone 3, third 7
 // major
 CHORDS_RULES[CHORDS_KEYS[0]] = [0, 4, 7];
 // minor
@@ -25,6 +24,10 @@ CHORDS_RULES[CHORDS_KEYS[3]].push(10);
 CHORDS_RULES[CHORDS_KEYS[4]] = CHORDS_RULES[CHORDS_KEYS[0]].slice();
 CHORDS_RULES[CHORDS_KEYS[4]].push(10);
 
+export const MIDDLE_C = {
+	tone: "C",
+	octave: 4
+};
 export const C_DUR = "C dur";
 export const FLAT_TO_SHARP_MAPPING = {
 	"Cb": "B",
@@ -168,5 +171,86 @@ export const NOTES_INC_RANGE = {
 			tone: "B",
 			octave: 0
 		}
+	}
+};
+
+export const BETWEEN_NOTES_TREBLE = [{
+	tone: "F",
+	octave: 4
+}, {
+	tone: "A",
+	octave: 4
+}, {
+	tone: "C",
+	octave: 5
+}, {
+	tone: "E",
+	octave: 5
+}];
+
+export const BETWEEN_NOTES_BASS = [{
+	tone: "A",
+	octave: 2
+}, {
+	tone: "C",
+	octave: 3
+}, {
+	tone: "E",
+	octave: 3
+}, {
+	tone: "G",
+	octave: 3
+}];
+
+export const ON_LINE_NOTES_TREBLE = [{
+	tone: "E",
+	octave: 4
+}, {
+	tone: "G",
+	octave: 4
+}, {
+	tone: "B",
+	octave: 4
+}, {
+	tone: "D",
+	octave: 5
+}, {
+	tone: "F",
+	octave: 5
+}];
+
+export const ON_LINE_NOTES_BASS = [{
+	tone: "G",
+	octave: 2
+}, {
+	tone: "B",
+	octave: 2
+}, {
+	tone: "D",
+	octave: 3
+}, {
+	tone: "F",
+	octave: 3
+}, {
+	tone: "A",
+	octave: 3
+}];
+
+export const IMAGES = {
+	treble: {
+		src: "/img/treble.png",
+		width: 45,
+		height: 119,
+		offsetY: 28
+	},
+	bass: {
+		src: "/img/bass.png",
+		width: 46,
+		height: 53
+	},
+	layout: {
+		src: "/img/keyboard-layout.png",
+		width: 1775,
+		height: 330
 	}
 };

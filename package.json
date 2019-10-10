@@ -1,5 +1,6 @@
 {
-  "name": "Skelet",
+  "name": "KeyboardKeys",
+  "author": "Roman Makudera",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",

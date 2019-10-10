@@ -1,14 +1,31 @@
 import Learn from "./learn";
 import Game from "./game";
 import GameNames from "./game-names";
-import { domCreate } from "utils";
+import { domCreate } from "./utils";
+import Resources from "./resources";
 
 class Main {
+	/**
+	 * Init point for the app.
+	 */
 	constructor() {
+		this._learn = null;
+		this._game = null;
+		this._active = null;
+		this._tabsData = null;
+
+		this._init();
+	}
+
+	/**
+	 * Async load resources.
+	 */
+	async _init() {
+		await Resources.load();
+		
 		this._learn = new Learn();
 		this._game = new Game();
 		this._gameNames = new GameNames();
-		this._active = null;
 		this._tabsData = [{
 			name: "Learn",
 			inst: this._learn,
@@ -38,16 +55,15 @@ class Main {
 			tabs.appendChild(tabOption);
 			tabContent.appendChild(i.el);
 		});
-
-		this._init();
-	}
-
-	async _init() {
-		await this._learn.load();
-		await this._game.load();
+		// def. tab
 		this._setActive(localStorage.getItem("keyboardKeysTab") || this._tabsData[0].name);
 	}
 
+	/**
+	 * Set active tab.
+	 *
+	 * @param   {String}  name Tab name
+	 */
 	_setActive(name) {
 		this._tabsData.forEach(i => {
 			i.el.classList[i.name == name ? "remove" : "add"]("hide");

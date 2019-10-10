@@ -1,49 +1,76 @@
+import Resources from "./resources";
 import KeyboardData from "keyboard-data";
-import { getImage } from "utils";
-
-const IMG = "/img/keyboard-layout.png";
-const SIZE = {
-	width: 1775,
-	height: 330
-};
+import { IMAGES } from "conf";
 
 class Keyboard {
+	/**
+	 * Keyboard.
+	 *
+	 * @param   {Element}  parentEl Append element
+	 * @param   {Function}  onKey Callback - on key press
+	 */
 	constructor(parentEl, onKey) {
 		this._parentEl = parentEl;
 		this._onKey = onKey;
 		this._canvas = document.createElement("canvas");
 		this._ctx = this._canvas.getContext("2d");
-		this._img = null;
+		this._img = Resources.layout;
 		this._keyboardData = null;
 		this._lastRatio = -1;
+		this._parentEl.appendChild(this._canvas);
+		this._canvas.addEventListener("click", e => {
+			let x = e.layerX;
+			let y = e.layerY;
 
-		this._init();
+			if (this._keyboardData) {
+				let find = this._keyboardData.getKey(x, y);
+
+				if (find) {
+					this.redraw();
+					this._drawKey(find);
+					if (typeof this._onKey === "function") this._onKey(find);
+				}
+			}
+		});
+		this.syncPort();
 	}
 
+	/**
+	 * Resize viewport, clears area.
+	 */
 	syncPort() {
 		let width = this._parentEl.offsetWidth;
-		let availWidth = Math.min(width, SIZE.width);
-		let ratio = availWidth / SIZE.width;
+		let availWidth = Math.min(width, IMAGES.layout.width);
+		let ratio = availWidth / IMAGES.layout.width;
 
 		if (this._lastRatio != ratio) {
-			let height = SIZE.height * ratio;
+			let height = IMAGES.layout.height * ratio;
 			
 			this._keyboardData = new KeyboardData(ratio);
 			this._canvas.width = availWidth;
 			this._canvas.height = height;
 			this._lastRatio = ratio;
 
-			this._drawBackground();
+			this.redraw();
 		}
 	}
 
+	/**
+	 * Redraw.
+	 */
 	redraw() {
-		this._drawBackground();
+		this._ctx.drawImage(this._img, 0, 0, IMAGES.layout.width, IMAGES.layout.height, 0, 0, this._canvas.width, this._canvas.height);
 	}
 
+	/**
+	 * Draw key.
+	 *
+	 * @param   {String}  tone  C...
+	 * @param   {Number}  octave 0-8
+	 */
 	drawKey(tone, octave) {
 		if (this._keyboardData) {
-			this._drawBackground();
+			this.redraw();
 
 			let keyData = this._keyboardData.findByTone(tone, octave);
 
@@ -53,9 +80,14 @@ class Keyboard {
 		}
 	}
 
+	/**
+	 * Draw multiple keys.
+	 *
+	 * @param   {Array}  keys Array of objects { tone, octave }
+	 */
 	drawKeys(keys) {
 		if (this._keyboardData) {
-			this._drawBackground();
+			this.redraw();
 
 			keys.forEach(item => {
 				let keyData = this._keyboardData.findByTone(item.tone, item.octave);
@@ -67,30 +99,11 @@ class Keyboard {
 		}
 	}
 
-	async _init() {
-		this._img = await getImage(IMG);
-		this._parentEl.appendChild(this._canvas);
-		this._canvas.addEventListener("click", e => {
-			let x = e.layerX;
-			let y = e.layerY;
-
-			if (this._keyboardData) {
-				let find = this._keyboardData.getKey(x, y);
-
-				if (find) {
-					this._drawBackground();
-					this._drawKey(find);
-					if (typeof this._onKey === "function") this._onKey(find);
-				}
-			}
-		});
-		this.syncPort();
-	}
-
-	_drawBackground() {
-		this._ctx.drawImage(this._img, 0, 0, SIZE.width, SIZE.height, 0, 0, this._canvas.width, this._canvas.height);
-	}
-
+	/**
+	 * Draw key from data.
+	 *
+	 * @param   {Object}  keyData See keyboardData.getKey output
+	 */
 	_drawKey(keyData) {
 		if (!keyData) return;
 
@@ -111,13 +124,13 @@ class Keyboard {
 				let startX = keyData.x;
 
 				switch (keyData.tone) {
-					// vlevo
+					// left
 					case "C":
 					case "F":
 						w *= 0.6;
 						break;
 
-					// uprostred
+					// middle
 					case "D":
 					case "G":
 					case "A":
@@ -131,7 +144,7 @@ class Keyboard {
 						
 						break;
 
-					// vpravo
+					// right
 					case "E":
 					case "B":
 						w *= 0.6;
@@ -139,9 +152,9 @@ class Keyboard {
 						break;
 				}
 
-				// horni cast
+				// top part
 				this._ctx.fillRect(startX, keyData.y, w, newY - keyData.y);
-				// spodni cast
+				// bottom part
 				this._ctx.fillRect(keyData.x, find.y + find.height, keyData.width, height);
 			}
 			else {
@@ -150,6 +163,9 @@ class Keyboard {
 		}
 	}
 
+	/**
+	 * Draw outline of all keys - for testing purpose.
+	 */
 	_drawOutline() {
 		this._ctx.strokeStyle = "red";
 

@@ -1,22 +1,8 @@
-import { getImage } from "utils";
-import { TONES } from "conf";
-
-const IMAGES = {
-	treble: {
-		src: "/img/treble.png",
-		width: 45,
-		height: 119,
-		offsetY: 28
-	},
-	bass: {
-		src: "/img/bass.png",
-		width: 46,
-		height: 53
-	}
-};
+import Resources from "./resources";
+import { TONES, IMAGES } from "conf";
 
 const CONFIG = {
-	paddingTopBottom: 30, // prostor nad linkou a pod
+	paddingTopBottom: 30, // space between note lines above/bottom
 	paddingLeftRight: 30,
 	lineHeight: 3,
 	lineDistance: 14,
@@ -25,6 +11,13 @@ const CONFIG = {
 	lines: 5,
 	startX: 110,
 	noteSize: 8,
+	sharpOffset: 15,
+	sharpSignOffset: 10,
+	fontFamily: "bold 16px Arial",
+	noteColor: "#c01",
+	sharpColor: "#008000",
+	lineColor: "#000",
+	helpLineColor: "rgba(0, 0, 0, 0.1)",
 	noteHandle: {
 		width: 3,
 		height: 51
@@ -32,6 +25,14 @@ const CONFIG = {
 };
 
 class Notes {
+	/**
+	 * Notes.
+	 *
+	 * @param   {Element}  parentEl Append element
+	 * @param   {Boolean}  isBass Is bass range?
+	 * @param   {Object}  notesRange Notes range
+	 * @param   {Function}  onClick  Callback - note area click
+	 */
 	constructor(parentEl, isBass, notesRange, onClick) {
 		this._parentEl = parentEl;
 		this._isBass = isBass;
@@ -39,7 +40,10 @@ class Notes {
 		this._onClick = onClick;
 		this._canvas = document.createElement("canvas");
 		this._ctx = this._canvas.getContext("2d");
-		this._images = {};
+		this._images = {
+			treble: Resources.treble,
+			bass: Resources.bass
+		};
 		this._dim = {
 			lines: [],
 			mainLines: [],
@@ -66,7 +70,7 @@ class Notes {
 			let octave = distances[0].line.octave;
 
 			if (distances[0].distance > CONFIG.clickDistanceThreshold) {
-				// mezi - spodek a posuneme
+				// between - move bottom
 				let toneInd = distances[0].line.toneInd;
 				let direction = y > distances[0].line.y ? 1 : -1;
 				toneInd -= direction;
@@ -88,70 +92,79 @@ class Notes {
 				y
 			});
 		});
-	}
 
-	load() {
-		return new Promise(async(resolve) => {
-			// obrazky
-			this._images.treble = await getImage(IMAGES.treble.src);
-			this._images.bass = await getImage(IMAGES.bass.src);
+		// counting
+		let y = CONFIG.paddingTopBottom;
+		let mainItem = this._notesRange[this._isBass ? "bass" : "treble"];
+		let linesCount = mainItem.top.helpLine + CONFIG.lines + mainItem.bottom.helpLine;
+		let toneInd = TONES.indexOf(mainItem.top.tone);
+		let octave = mainItem.top.octave;
+		let ind = 0;
 
-			// spocitame
-			let y = CONFIG.paddingTopBottom;
-			let mainItem = this._notesRange[this._isBass ? "bass" : "treble"];
-			let linesCount = mainItem.top.helpLine + CONFIG.lines + mainItem.bottom.helpLine;
-			let toneInd = TONES.indexOf(mainItem.top.tone);
-			let octave = mainItem.top.octave;
-			let ind = 0;
-
-			for (let i = 0; i < linesCount; i++) {
-				let tone = TONES[toneInd];
-				let line = {
-					tone,
-					toneInd,
-					octave,
-					y,
-					main: false,
-					ind
-				};
-				ind++;
-				if (i >= mainItem.top.helpLine && i < mainItem.top.helpLine + CONFIG.lines) line.main = true;
-				toneInd -= 2;
-				if (toneInd < 0) {
-					toneInd = TONES.length + toneInd;
-					octave--;
-				}
-				y += CONFIG.lineHeight + CONFIG.lineDistance;
-				this._dim.lines.push(line);
-				if (line.main) {
-					this._dim.mainLines.push(line);
-				}
+		for (let i = 0; i < linesCount; i++) {
+			let tone = TONES[toneInd];
+			let line = {
+				tone,
+				toneInd,
+				octave,
+				y,
+				main: false,
+				ind
+			};
+			ind++;
+			if (i >= mainItem.top.helpLine && i < mainItem.top.helpLine + CONFIG.lines) line.main = true;
+			toneInd -= 2;
+			if (toneInd < 0) {
+				toneInd = TONES.length + toneInd;
+				octave--;
 			}
+			y += CONFIG.lineHeight + CONFIG.lineDistance;
+			this._dim.lines.push(line);
+			if (line.main) {
+				this._dim.mainLines.push(line);
+			}
+		}
 
-			this._dim.height = y + CONFIG.paddingTopBottom;
+		this._dim.height = y + CONFIG.paddingTopBottom;
 
-			// pripojime
-			this._parentEl.appendChild(this._canvas);
-			this.syncPort();
-			this.redraw();
-			resolve();
-		});
+		// dom append
+		this._parentEl.appendChild(this._canvas);
+		this.syncPort();
+		this.redraw();
 	}
 
+	/**
+	 * Sync port - resize area.
+	 */
 	syncPort() {
 		let width = this._parentEl.offsetWidth;
 
 		this._canvas.width = width;
 		this._canvas.height = this._dim.height;
+		this.redraw();
 	}
 
+	/**
+	 * Redraw to blank sheet.
+	 */
 	redraw() {
 		this._drawBackground();
 		this._drawLines();
 		this._drawKey();
 	}
 
-	// C4 -> treble, pod C4 bass
+	// C4 -> treble, below C4 bass
+
+	/**
+	 * Draw a note.
+	 *
+	 * @param   {String}  tone  C...
+	 * @param   {Number}  octave 0-8
+	 * @param   {Object}  [optsArg] Config
+	 * @param   {Boolean}  [optsArg.withTone = true] Draw note with tone sign
+	 * @param   {Boolean}  [optsArg.isSharp = false] Draw note with sharp sign
+	 * @param   {Number}  [optsArg.x = undefined] Draw note with own x value
+	 */
 	drawNote(tone, octave, optsArg) {
 		let opts = Object.assign({
 			withTone: true,
@@ -176,9 +189,13 @@ class Notes {
 		this._drawNote(findData, opts);
 	}
 
+	/**
+	 * Draw notes.
+	 *
+	 * @param   {Array}  notes  Array of objects { tone, octave }
+	 * @param   {Boolean}  [disableTone] Disable showing tone name
+	 */
 	drawNotes(notes, disableTone) {
-		let sharpStartAdd = 15;
-		let nonSharpOffset = 15;
 		let hasSharp = false;
 		let items = [];
 		notes.forEach(i => {
@@ -203,7 +220,7 @@ class Notes {
 			}
 
 			if (!i.isSharp && hasSharp) {
-				i.findData.x += nonSharpOffset;
+				i.findData.x += CONFIG.sharpOffset;
 			}
 
 			this._drawNote(i.findData, {
@@ -213,30 +230,42 @@ class Notes {
 		});
 
 		if (hasSharp) {
-			this._currentX += nonSharpOffset + sharpStartAdd;
+			this._currentX += CONFIG.sharpOffset * 2;
 		}
 	}
 
+	/**
+	 * Move offset to next draw position.
+	 */
 	moveOffset() {
 		this._currentX += CONFIG.noteSize + 21;
 	}
 
+	/**
+	 * Reset draw offset to the start position.
+	 */
 	resetOffset() {
 		this._currentX = CONFIG.startX;
 	}
 
+	/**
+	 * Draw empty background.
+	 */
 	_drawBackground() {
 		this._ctx.fillStyle = "#fff";
 		this._ctx.fillRect(0, 0, this._canvas.width, this._canvas.height);
 	}
 
+	/**
+	 * Draw all lines.
+	 */
 	_drawLines() {
 		let width = this._canvas.width - 2 * CONFIG.paddingLeftRight;
 		let startX = CONFIG.paddingLeftRight;
 		let endX = startX + width;
 
-		// pomocne cary
-		this._ctx.strokeStyle = "rgba(0, 0, 0, 0.1)";
+		// help lines
+		this._ctx.strokeStyle = CONFIG.helpLineColor;
 
 		this._dim.lines.forEach(line => {
 			if (line.main) return;
@@ -247,8 +276,8 @@ class Notes {
 			this._ctx.stroke();
 		});
 
-		// hlavni cary
-		this._ctx.strokeStyle = "#000";
+		// main lines
+		this._ctx.strokeStyle = CONFIG.lineColor;
 
 		this._dim.mainLines.forEach(line => {
 			this._ctx.beginPath();
@@ -257,7 +286,7 @@ class Notes {
 			this._ctx.stroke();
 		});
 
-		// zacatek/konec
+		// begin/end
 		this._ctx.beginPath();
 		this._ctx.moveTo(startX, this._dim.mainLines[0].y);
 		this._ctx.lineTo(startX, this._dim.mainLines[this._dim.mainLines.length - 1].y);
@@ -269,6 +298,9 @@ class Notes {
 		this._ctx.stroke();
 	}
 
+	/**
+	 * Draw signature key.
+	 */
 	_drawKey() {
 		let startX = CONFIG.paddingLeftRight + CONFIG.keyOffset;
 
@@ -280,6 +312,13 @@ class Notes {
 		}
 	}
 
+	/**
+	 * Find note by tone and octave.
+	 *
+	 * @param   {String}  tone  C...
+	 * @param   {Number}  octave 0-8
+	 * @return  {Object}
+	 */
 	_findNote(tone, octave) {
 		let toneInd = TONES.indexOf(tone);
 		let find = null;
@@ -307,6 +346,14 @@ class Notes {
 		} : null);
 	}
 
+	/**
+	 * Draw note with findData.
+	 *
+	 * @param   {Object}  findData Find note data object
+	 * @param   {Object}  [optsArg]
+	 * @param   {Boolean}  [optsArg.withTone = true] Draw note with tone sign
+	 * @param   {Boolean}  [optsArg.isSharp = false] Draw note with sharp sign
+	 */
 	_drawNote(findData, optsArg) {
 		let opts = Object.assign({
 			withTone: true,
@@ -317,7 +364,7 @@ class Notes {
 			this._drawNoteHelpLines(findData);
 		}
 
-		// nota
+		// note
 		let lineHalfHeight = CONFIG.lineDistance / 2;
 		let noteY = findData.find.y + (findData.exact ? 0 : findData.direction * lineHalfHeight);
 
@@ -330,25 +377,30 @@ class Notes {
 		let offset = 2;
 
 		if (opts.withTone) {
-			// nazev
-			this._ctx.fillStyle = "#c01";
-			this._ctx.font = "bold 16px Arial";
+			// note name
+			this._ctx.fillStyle = CONFIG.noteColor;
+			this._ctx.font = CONFIG.fontFamily;
 			this._ctx.fillText(findData.tone, findData.x + offset + (findData.tone == "B" ? 1 : 0), noteY + CONFIG.noteSize - offset);
 		}
 		else {
 			this._drawNoteHelpLines(findData);
 		}
 
-		// krizek?
+		// sharp?
 		if (opts.isSharp) {
-			this._ctx.fillStyle = "#008000";
-			this._ctx.font = "bold 16px Arial";
-			this._ctx.fillText("#", findData.x - 10, noteY + CONFIG.noteSize - offset);
+			this._ctx.fillStyle = CONFIG.sharpColor;
+			this._ctx.font = CONFIG.fontFamily;
+			this._ctx.fillText("#", findData.x - CONFIG.sharpSignOffset, noteY + CONFIG.noteSize - offset);
 		}
 	}
 
+	/**
+	 * Draw note help lines.
+	 *
+	 * @param   {Object}  findData Find note data object
+	 */
 	_drawNoteHelpLines(findData) {
-		// mrizkovani
+		// note help lines
 		let lastInd = this._dim.mainLines[this._dim.mainLines.length - 1].ind;
 
 		if (findData.find.ind < this._dim.mainLines[0].ind) {
