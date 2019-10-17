@@ -254,3 +254,11 @@ export const IMAGES = {
 		height: 330
 	}
 };
+
+export const KEYBOARD_RANGE = [{
+	tone: "A",
+	octave: 0
+}, {
+	tone: "C",
+	octave: 8
+}];

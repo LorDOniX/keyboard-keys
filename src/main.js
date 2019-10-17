@@ -4,6 +4,8 @@ import GameNames from "./game-names";
 import { domCreate } from "./utils";
 import Resources from "./resources";
 
+const LS_TAB_KEY = "keyboardKeysTab";
+
 class Main {
 	/**
 	 * Init point for the app.
@@ -56,7 +58,7 @@ class Main {
 			tabContent.appendChild(i.el);
 		});
 		// def. tab
-		this._setActive(localStorage.getItem("keyboardKeysTab") || this._tabsData[0].name);
+		this._setActive(localStorage.getItem(LS_TAB_KEY) || this._tabsData[0].name);
 	}
 
 	/**
@@ -77,7 +79,7 @@ class Main {
 				}
 
 				this._active = i.inst;
-				localStorage.setItem("keyboardKeysTab", i.name);
+				localStorage.setItem(LS_TAB_KEY, i.name);
 			}
 		});
 	}

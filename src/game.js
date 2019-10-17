@@ -1,12 +1,9 @@
 import Keyboard from "keyboard";
 import Notes from "notes";
-import { NOTES_RANGE, KEYS_SIGNATURES, TONES, ALL_TONES_SHARP, KEYS_SIGNATURES_OBJ, C_DUR, FLAT_TO_SHARP_MAPPING } from "conf";
+import { NOTES_RANGE, KEYS_SIGNATURES, TONES, ALL_TONES_SHARP, KEYS_SIGNATURES_OBJ, C_DUR, FLAT_TO_SHARP_MAPPING, MIDDLE_C, KEYBOARD_RANGE } from "conf";
 import { domCreate } from "utils";
 
 const DATA = {
-	trebleRange: ["C6", "C7", "C8"],
-	bassRange: ["C2", "C1"],
-	notesRange: ["Only treble", "Only bass", "Full"],
 	notesCount: [25, 50, 75, 100],
 	notesTime: [5, 10, 15, 20, 25, 30],
 	notesType: ["Non sharp", "Sharp"],
@@ -15,6 +12,7 @@ const DATA = {
 };
 
 const GUESS_NEW_NOTE_TIME = 5;
+const LS_GAME_SETTINGS_KEY = "keyboardKeysGameSettings";
 
 class Game {
 	constructor() {
@@ -186,42 +184,55 @@ class Game {
 					}]
 				}, {
 					el: "span",
-					child: ["Treble range", {
+					child: ["Start tone", {
 						el: "select",
-						child: DATA.trebleRange.map(item => {
+						child: TONES.map(item => {
 							return {
 								el: "option",
 								value: item,
 								text: item
 							};
 						}),
-						_export: "selectTrebleRange"
+						_export: "selectStartTone"
 					}]
 				}, {
 					el: "span",
-					child: ["Bass range", {
+					child: ["Start octave", {
 						el: "select",
-						child: DATA.bassRange.map(item => {
+						child: this._generateValues(KEYBOARD_RANGE[0].octave, KEYBOARD_RANGE[1].octave - 1).map(i => {
+							return {
+								el: "option",
+								value: i,
+								text: i
+							};
+						}),
+						_export: "selectStartOctave"
+					}]
+				}, {
+					el: "span",
+					child: ["End tone", {
+						el: "select",
+						child: TONES.map(item => {
 							return {
 								el: "option",
 								value: item,
 								text: item
 							};
 						}),
-						_export: "selectBassRange"
+						_export: "selectEndTone"
 					}]
 				}, {
 					el: "span",
-					child: ["Notes range", {
+					child: ["End octave", {
 						el: "select",
-						child: DATA.notesRange.map((item, ind) => {
+						child: this._generateValues(KEYBOARD_RANGE[0].octave, KEYBOARD_RANGE[1].octave).map(i => {
 							return {
 								el: "option",
-								value: ind,
-								text: item
+								value: i,
+								text: i
 							};
 						}),
-						_export: "selectNotesRange"
+						_export: "selectEndOctave"
 					}]
 				}, {
 					el: "span",
@@ -298,13 +309,14 @@ class Game {
 						el: "button",
 						text: "Easy mode",
 						onclick: () => {
-							this._dom.selectTrebleRange.value = DATA.trebleRange[0];
-							this._dom.selectBassRange.value = DATA.bassRange[0];
-							this._dom.selectNotesRange.value = 0;
 							this._dom.selectNotesCount.value = DATA.notesCount[1];
 							this._dom.selectNotesTime.value = DATA.notesTime[1];
 							this._dom.selectNotesType.value = 0;
 							this._dom.selectNotesShow.value = 1;
+							this._dom.selectStartTone.value = MIDDLE_C.tone;
+							this._dom.selectStartOctave.value = MIDDLE_C.octave;
+							this._dom.selectEndTone.value = MIDDLE_C.tone;
+							this._dom.selectEndOctave.value = MIDDLE_C.octave + 2;
 						}
 					}
 				}, {
@@ -313,13 +325,14 @@ class Game {
 						el: "button",
 						text: "Easy mode full",
 						onclick: () => {
-							this._dom.selectTrebleRange.value = DATA.trebleRange[0];
-							this._dom.selectBassRange.value = DATA.bassRange[0];
-							this._dom.selectNotesRange.value = 2;
 							this._dom.selectNotesCount.value = DATA.notesCount[1];
 							this._dom.selectNotesTime.value = DATA.notesTime[1];
 							this._dom.selectNotesType.value = 0;
 							this._dom.selectNotesShow.value = 1;
+							this._dom.selectStartTone.value = MIDDLE_C.tone;
+							this._dom.selectStartOctave.value = MIDDLE_C.octave - 2;
+							this._dom.selectEndTone.value = MIDDLE_C.tone;
+							this._dom.selectEndOctave.value = MIDDLE_C.octave + 2;
 						}
 					}
 				}, {
@@ -343,15 +356,22 @@ class Game {
 
 		Object.assign(this._dom, exportObj);
 		// default values
-		this._dom.selectSignature.value = C_DUR;
-		this._dom.selectTrebleRange.value = DATA.trebleRange[DATA.trebleRange.length - 1];
-		this._dom.selectBassRange.value = DATA.bassRange[DATA.bassRange.length - 1];
-		this._dom.selectNotesRange.value = DATA.notesRange.length - 1;
-		this._dom.selectNotesCount.value = DATA.notesCount[1];
-		this._dom.selectNotesTime.value = DATA.notesTime[0];
-		this._dom.selectNotesType.value = DATA.notesType.length - 1;
-		this._dom.selectNotesShow.value = 0;
-		this._dom.selectSound.value = 1;
+		let defValues = localStorage.getItem(LS_GAME_SETTINGS_KEY);
+
+		if (defValues) {
+			defValues = JSON.parse(defValues);
+		}
+
+		this._dom.selectSignature.value = defValues ? defValues.signature : C_DUR;
+		this._dom.selectNotesCount.value = defValues ? defValues.notesCount : DATA.notesCount[1];
+		this._dom.selectNotesTime.value = defValues ? defValues.notesTime : DATA.notesTime[0];
+		this._dom.selectNotesType.value = defValues ? defValues.notesType : DATA.notesType.length - 1;
+		this._dom.selectNotesShow.value = defValues ? defValues.notesShow : 0;
+		this._dom.selectSound.value = defValues ? defValues.soundvalue : 1;
+		this._dom.selectStartTone.value = defValues ? defValues.startTone : KEYBOARD_RANGE[0].tone;
+		this._dom.selectStartOctave.value = defValues ? defValues.startOctave : KEYBOARD_RANGE[0].octave;
+		this._dom.selectEndTone.value = defValues ? defValues.endTone : KEYBOARD_RANGE[1].tone;
+		this._dom.selectEndOctave.value = defValues ? defValues.endOctave : KEYBOARD_RANGE[1].octave;
 	}
 
 	/**
@@ -360,6 +380,19 @@ class Game {
 	_startGame() {
 		// reset
 		this.show();
+		// update local storage with options info
+		localStorage.setItem(LS_GAME_SETTINGS_KEY, JSON.stringify({
+			signature: this._dom.selectSignature.value,
+			notesCount: this._dom.selectNotesCount.value,
+			notesTime: this._dom.selectNotesTime.value,
+			notesType: this._dom.selectNotesType.value,
+			notesShow: this._dom.selectNotesShow.value,
+			soundvalue: this._dom.selectSound.value,
+			startTone: this._dom.selectStartTone.value,
+			startOctave: this._dom.selectStartOctave.value,
+			endTone: this._dom.selectEndTone.value,
+			endOctave: this._dom.selectEndOctave.value
+		}));
 
 		if (this._gameData.guessTimerID) {
 			clearInterval(this._gameData.guessTimerID);
@@ -375,6 +408,12 @@ class Game {
 		let time = parseFloat(this._dom.selectNotesTime.value);
 		let count = parseFloat(this._dom.selectNotesCount.value);
 		let notes = this._generateNotes();
+
+		if (!notes.length) {
+			this._showInfo("Notes range results in empty list!", false);
+			return;
+		}
+
 		let gameNotes = [];
 
 		while (true) {
@@ -405,44 +444,42 @@ class Game {
 	 */
 	_generateNotes() {
 		// generate notes
-		let value = this._dom.selectNotesRange.value;
-		let trebleTone = this._dom.selectTrebleRange.value;
-		let bassTone = this._dom.selectBassRange.value;
 		let isSharp = this._dom.selectNotesType.value == "1";
-		let middleC = "C4";
-		let range = [];
-
-		// only treble
-		if (value == "0") {
-			range.push(middleC, trebleTone);
-		}
-		// only bass
-		else if (value == "1") {
-			range.push(bassTone, middleC);
-		}
-		// full
-		else {
-			range.push(bassTone, trebleTone);
-		}
-
-		let startOctave = parseFloat(range[0].match(/[0-9]/)[0]);
-		let endOctave = parseFloat(range[1].match(/[0-9]/)[0]);
+		let startOctaveValue = parseFloat(this._dom.selectStartOctave.value);
+		let endOctaveValue = parseFloat(this._dom.selectEndOctave.value);
+		let octave = Math.min(startOctaveValue, endOctaveValue);
+		let endOctave = Math.max(startOctaveValue, endOctaveValue);
+		let source = isSharp ? ALL_TONES_SHARP : TONES;
+		let toneInd = source.indexOf(this._dom.selectStartTone.value);
+		let endToneInd = source.indexOf(this._dom.selectEndTone.value);
+		let minToneInd = source.indexOf(KEYBOARD_RANGE[0].tone);
+		let maxToneInd = source.indexOf(KEYBOARD_RANGE[1].tone);
 		let allNotes = [];
 
-		for (let i = startOctave; i < endOctave; i++) {
-			let source = isSharp ? ALL_TONES_SHARP : TONES;
-			allNotes = allNotes.concat(source.map(tone => {
-				return {
-					tone,
-					octave: i
-				}
-			}));
-		}
+		while (true) {
+			let insert = true;
 
-		allNotes.push({
-			tone: "C",
-			octave: endOctave
-		});
+			if (toneInd < minToneInd && octave == KEYBOARD_RANGE[0].octave) {
+				insert = false;
+			}
+			if ((toneInd > endToneInd && octave == endOctave) || (toneInd > maxToneInd && octave == KEYBOARD_RANGE[1].octave)) {
+				break;
+			}
+
+			if (insert) {
+				allNotes.push({
+					tone: source[toneInd],
+					octave
+				});
+			}
+
+			toneInd++;
+
+			if (toneInd == source.length) {
+				toneInd = 0;
+				octave++;
+			}
+		}
 
 		return allNotes;
 	}
@@ -566,6 +603,23 @@ class Game {
 		}
 
 		this._dom.infoPanel.textContent = `${msg} - order ${this._gameData.ind}/${this._gameData.count} correct ${this._gameData.correct} wrong ${this._gameData.wrong}`;
+	}
+
+	/**
+	 * Generate empty array with values from start to end.
+	 *
+	 * @param   {Number}  start Start value
+	 * @param   {Number}  end End value
+	 * @return  {Array}
+	 */
+	_generateValues(start, end) {
+		let values = [];
+
+		for (let i = start; i <= end; i++) {
+			values.push(i);
+		}
+
+		return values;
 	}
 };
 
