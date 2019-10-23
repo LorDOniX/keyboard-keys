@@ -1,6 +1,6 @@
 {
   "name": "KeyboardKeys",
-  "author": "Roman Makudera",
+  "author": "",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -9,7 +9,6 @@
     "dev": "node bundler.js dev",
     "dist": "node bundler.js dist"
   },
-  "author": "",
   "license": "ISC",
   "dependencies": {
     "babel-core": "^6.26.0",

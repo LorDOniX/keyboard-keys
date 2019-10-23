@@ -1,6 +1,7 @@
 import Keyboard from "keyboard";
 import Notes from "notes";
 import Chords from "chords";
+import Guitar from "guitar";
 import { KEYS_SIGNATURES, NOTES_INC_RANGE, BETWEEN_NOTES_TREBLE, BETWEEN_NOTES_BASS, ON_LINE_NOTES_TREBLE, ON_LINE_NOTES_BASS } from "conf";
 import { domCreate } from "utils";
 
@@ -26,6 +27,7 @@ class Learn {
 			}
 
 			this._dom.h1Tone.textContent = toneTxt;
+			this._guitar.drawNote(tone, octave, isSharp);
 
 			if (octave >= 4) {
 				this._notesTreble.drawNote(tone, octave, {
@@ -52,6 +54,25 @@ class Learn {
 			this._showTone(data.tone, data.octave, true, false/*, data.x*/);
 		});
 		this._chords = new Chords(this, this._dom.selectOctave, this._dom.selectKey, this._dom.selectNote, this._dom.btnShowChord);
+		this._guitar = new Guitar(this._dom.guitar, data => {
+			let isSharp = data.tone.indexOf("#") != -1;
+			let tone = isSharp ? data.tone.replace("#", "") : data.tone;
+
+			this._keyboard.drawKey(data.tone, data.octave);
+
+			if (data.octave >= 4) {
+				this._notesTreble.drawNote(tone, data.octave, {
+					isSharp
+				});
+				this._notesTreble.moveOffset();
+			}
+			else {
+				this._notesBass.drawNote(tone, data.octave, {
+					isSharp
+				});
+				this._notesBass.moveOffset();
+			}
+		});
 	}
 
 	/**
@@ -75,6 +96,8 @@ class Learn {
 		this._notesTreble.redraw();
 		this._notesBass.resetOffset();
 		this._notesBass.redraw();
+		this._guitar.syncPort();
+		this._guitar.redraw();
 	}
 
 	/**
@@ -139,6 +162,10 @@ class Learn {
 				_export: "notesBass"
 			}, {
 				el: "div",
+				id: "guitar",
+				_export: "guitar"
+			}, {
+				el: "div",
 				id: "keyboard",
 				_export: "keyboard"
 			}, {
@@ -176,6 +203,7 @@ class Learn {
 							this._notesTreble.moveOffset();
 							this._notesBass.drawNote(tone, octave);
 							this._notesBass.moveOffset();
+							this._guitar.drawNote(tone, octave);
 						}
 					}, {
 						el: "button",
@@ -187,6 +215,7 @@ class Learn {
 							let allNotes = [].concat(BETWEEN_NOTES_TREBLE, BETWEEN_NOTES_BASS);
 
 							this._keyboard.drawKeys(allNotes);
+							this._guitar.drawNotes(allNotes);
 							this._notesTreble.drawNotes(BETWEEN_NOTES_TREBLE);
 							this._notesTreble.moveOffset();
 							this._notesBass.drawNotes(BETWEEN_NOTES_BASS);
@@ -202,6 +231,7 @@ class Learn {
 							let allNotes = [].concat(ON_LINE_NOTES_TREBLE, ON_LINE_NOTES_BASS);
 
 							this._keyboard.drawKeys(allNotes);
+							this._guitar.drawNotes(allNotes);
 							this._notesTreble.drawNotes(ON_LINE_NOTES_TREBLE);
 							this._notesTreble.moveOffset();
 							this._notesBass.drawNotes(ON_LINE_NOTES_BASS);
@@ -257,12 +287,14 @@ class Learn {
 							if (value.length) {
 								let item = value[0];
 								this._dom.signatureInfo.textContent = item.tones.join(", ");
-								this._keyboard.drawKeys(item.tones.map(i => {
+								let tones = item.tones.map(i => {
 									return {
 										tone: i,
 										octave: 4
 									};
-								}));
+								});
+								this._keyboard.drawKeys(tones);
+								this._guitar.drawNotes(tones);
 							}
 						}
 					}, {
@@ -297,6 +329,7 @@ class Learn {
 		}
 
 		this._keyboard.drawKeys(tones);
+		this._guitar.drawNotes(tones);
 		this._dom.h1Tone.textContent = name + ": " + tones.map(i => `${i.tone}${i.octave}`).join(", ");
 	}
 
@@ -310,6 +343,7 @@ class Learn {
 	 */
 	_showTone(tone, octave, isBass, x) {
 		this._keyboard.drawKey(tone, octave);
+		this._guitar.drawNote(tone, octave);
 
 		if (isBass) {
 			this._notesBass.drawNote(tone, octave, {

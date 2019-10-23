@@ -262,3 +262,49 @@ export const KEYBOARD_RANGE = [{
 	tone: "C",
 	octave: 8
 }];
+
+export const GUITAR_TONES = [
+	{
+		string: "E",
+		order: 1,
+		startTone: {
+			tone: "E",
+			octave: 4
+		}
+	}, {
+		string: "B",
+		order: 2,
+		startTone: {
+			tone: "B",
+			octave: 3
+		}
+	}, {
+		string: "G",
+		order: 3,
+		startTone: {
+			tone: "G",
+			octave: 3
+		}
+	}, {
+		string: "D",
+		order: 4,
+		startTone: {
+			tone: "D",
+			octave: 3
+		}
+	}, {
+		string: "A",
+		order: 5,
+		startTone: {
+			tone: "A",
+			octave: 2
+		}
+	}, {
+		string: "E",
+		order: 6,
+		startTone: {
+			tone: "E",
+			octave: 2
+		}
+	}
+]

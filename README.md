@@ -1,11 +1,12 @@
 # KeyboardKeys
-![Image description](preview.jpg)
+![Image description](preview.png)
 
 ## Info
 * this website is for teaching purporse with virtual keyboard/piano
 * created mainly for me, because I want to learn, how to play the piano
 ## Features
 * 88 keys keyboard, with key mapping to notes section
+* add maping to guitar fretboard
 * treble and bass notes section
 * click to note section show the correct keyboard key
 * set tones - `C4 C5` - custom tones will be showed in notes section and on the keyboard
