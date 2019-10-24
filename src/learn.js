@@ -2,8 +2,9 @@ import Keyboard from "keyboard";
 import Notes from "notes";
 import Chords from "chords";
 import Guitar from "guitar";
-import { KEYS_SIGNATURES, NOTES_INC_RANGE, BETWEEN_NOTES_TREBLE, BETWEEN_NOTES_BASS, ON_LINE_NOTES_TREBLE, ON_LINE_NOTES_BASS, GUITAR_TUNES } from "conf";
+import { KEYS_SIGNATURES, NOTES_INC_RANGE, BETWEEN_NOTES_TREBLE, BETWEEN_NOTES_BASS, ON_LINE_NOTES_TREBLE, ON_LINE_NOTES_BASS, GUITAR_TUNES, FLAT_TO_SHARP_MAPPING } from "conf";
 import { domCreate } from "utils";
+import { OCTAVES, MIDDLE_C } from "./conf";
 
 class Learn {
 	/**
@@ -279,6 +280,10 @@ class Learn {
 						}),
 						_export: "selectSignature"
 					}, {
+						el: "select",
+						class: "octave",
+						_export: "selectSignatureOctave"
+					}, {
 						el: "button",
 						class: "show",
 						text: "Show signature",
@@ -289,11 +294,24 @@ class Learn {
 								let item = value[0];
 								this._dom.signatureInfo.textContent = item.tones.join(", ");
 								let tones = item.tones.map(i => {
-									return {
+									let tone = {
 										tone: i,
-										octave: 4
+										octave: parseFloat(this._dom.selectSignatureOctave.value)
 									};
+
+									if (item.key == "b") {
+										if (tone.tone.indexOf("b") != -1) {
+											let newTone = FLAT_TO_SHARP_MAPPING[tone.tone];
+											let newOctave = tone.tone == "Cb" ? tone.octave - 1 : tone.octave;
+
+											tone.tone = newTone;
+											tone.octave = newOctave;
+										}
+									}
+
+									return tone;
 								});
+
 								this._keyboard.drawKeys(tones);
 								this._guitar.drawNotes(tones);
 							}
@@ -324,6 +342,16 @@ class Learn {
 
 		Object.assign(this._dom, exportObj);
 		this._dom.selectSignature.value = KEYS_SIGNATURES.filter(i => i.key == "#" && i.count == 0)[0].name;
+		// signature octave
+		for (let i = 1; i <= OCTAVES; i++) {
+			let option = domCreate({
+				el: "option",
+				value: i,
+				text: i
+			});
+			this._dom.selectSignatureOctave.appendChild(option);
+		}
+		this._dom.selectSignatureOctave.value = MIDDLE_C.octave;
 	}
 
 	/**
