@@ -29,10 +29,10 @@ class Guitar {
 		this._dim = {
 			height: CONFIG.cellHeight * CONFIG.strings + (CONFIG.strings + 1) * CONFIG.lineHeight + 2 * CONFIG.padding
 		};
-		this._strings = this._generateStrings();
+		this._strings = [];
 
 		this.syncPort();
-		this.redraw();
+		this.setTune();
 	}
 
 	/**
@@ -45,6 +45,15 @@ class Guitar {
 		this._canvas.height = this._dim.height;
 		this._dim.cellWidth = Math.floor((width - 2 * CONFIG.padding - (CONFIG.frets + 1) * CONFIG.lineWidth) / CONFIG.frets);
 		this._dim.lastX = CONFIG.padding + CONFIG.frets * this._dim.cellWidth + (CONFIG.frets + 1) * CONFIG.lineWidth;
+
+		this.redraw();
+	}
+
+	setTune(config) {
+		let defConfig = [];
+
+		for (let i = 0; i < CONFIG.strings; i++) defConfig.push(0);
+		this._strings = this._generateStrings(config || defConfig);
 
 		this.redraw();
 	}
@@ -207,14 +216,24 @@ class Guitar {
 		});
 	}
 
-	_generateStrings() {
+	_generateStrings(config) {
 		let strings = [];
 
 		for (let i = 0, max = Math.min(GUITAR_TONES.length, CONFIG.strings); i < max; i++) {
 			let stringData = GUITAR_TONES[i];
 			let string = [];
-			let ind = ALL_TONES_SHARP.indexOf(stringData.startTone.tone);
+			let ind = ALL_TONES_SHARP.indexOf(stringData.startTone.tone) + config[config.length - 1 - i];
 			let octave = stringData.startTone.octave;
+			let maxLen = ALL_TONES_SHARP.length;
+
+			if (ind < 0) {
+				ind += maxLen;
+				octave--;
+			}
+			else if (ind >= maxLen) {
+				ind -= maxLen;
+				octave++;
+			}
 
 			for (let x = 0; x < CONFIG.frets; x++) {
 				let tone = ALL_TONES_SHARP[ind];
@@ -224,7 +243,7 @@ class Guitar {
 					fret: x
 				});
 				ind++;
-				if (ind == ALL_TONES_SHARP.length) {
+				if (ind == maxLen) {
 					ind = 0;
 					octave++;
 				}

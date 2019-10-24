@@ -307,4 +307,42 @@ export const GUITAR_TONES = [
 			octave: 2
 		}
 	}
-]
+];
+
+export const GUITAR_TUNES = [{
+	name: "Standard",
+	key: "EADGBE",
+	config: [0, 0, 0, 0, 0, 0]
+}, {
+	name: "Drop D",
+	key: "DADGBE",
+	config: [-2, 0, 0, 0, 0, 0]
+}, {
+	name: "Half step down",
+	key: "D#G#C#F#A#D#",
+	config: [-1, -1, -1, -1, -1, -1]
+}, {
+	name: "Drop C#",
+	key: "C#G#C#F#A#D#",
+	config: [-3, -1, -1, -1, -1, -1]
+}, {
+	name: "Two steps down",
+	key: "DGCFAD",
+	config: [-2, -2, -2, -2, -2, -2]
+}, {
+	name: "Drop C",
+	key: "CGCFAD",
+	config: [-4, -2, -2, -2, -2, -2]
+}, {
+	name: "C",
+	key: "CFA#D#GC",
+	config: [-4, -4, -4, -4, -4, -4]
+}, {
+	name: "Drop B",
+	key: "BF#BEG#C#",
+	config: [-5, -3, -3, -3, -3, -3]
+}, {
+	name: "Drop A#",
+	key: "A#FA#D#GC",
+	config: [-6, -4, -4, -4, -4, -4]
+}];

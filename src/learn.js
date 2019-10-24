@@ -2,7 +2,7 @@ import Keyboard from "keyboard";
 import Notes from "notes";
 import Chords from "chords";
 import Guitar from "guitar";
-import { KEYS_SIGNATURES, NOTES_INC_RANGE, BETWEEN_NOTES_TREBLE, BETWEEN_NOTES_BASS, ON_LINE_NOTES_TREBLE, ON_LINE_NOTES_BASS } from "conf";
+import { KEYS_SIGNATURES, NOTES_INC_RANGE, BETWEEN_NOTES_TREBLE, BETWEEN_NOTES_BASS, ON_LINE_NOTES_TREBLE, ON_LINE_NOTES_BASS, GUITAR_TUNES } from "conf";
 import { domCreate } from "utils";
 
 class Learn {
@@ -73,6 +73,7 @@ class Learn {
 				this._notesBass.moveOffset();
 			}
 		});
+		this._setGuitarTunes();
 	}
 
 	/**
@@ -303,6 +304,21 @@ class Learn {
 						_export: "signatureInfo"
 					}]
 				}
+			}, {
+				el: "div",
+				child: [{
+					el: "span",
+					class: "guitar-tune",
+					child: ["Guitar tune: ", {
+						el: "select",
+						class: "guitar",
+						_export: "selectGuitarTune"
+					}]
+				}, {
+					el: "span",
+					class: "info",
+					_export: "guitarTuneInfo"
+				}]
 			}]
 		}, exportObj);
 
@@ -361,6 +377,32 @@ class Learn {
 		}
 
 		this._dom.h1Tone.textContent = `${tone}${octave}`;
+	}
+
+	_setGuitarTunes() {
+		GUITAR_TUNES.forEach(i => {
+			let option = domCreate({
+				el: "option",
+				value: i.key,
+				text: i.name
+			});
+			this._dom.selectGuitarTune.appendChild(option);
+		});
+		this._dom.selectGuitarTune.addEventListener("change", e => {
+			this._setGuitarTune(this._dom.selectGuitarTune.value);
+		});
+
+		this._setGuitarTune(GUITAR_TUNES[0].key);
+	}
+
+	_setGuitarTune(key) {
+		let item = GUITAR_TUNES.filter(i => i.key == key);
+
+		if (item.length) {
+			item = item[0];
+			this._dom.guitarTuneInfo.textContent = `${item.key}: ${item.config.join("")}`;
+			this._guitar.setTune(item.config);
+		}
 	}
 };
 
