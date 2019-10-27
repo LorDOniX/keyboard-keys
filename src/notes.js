@@ -1,3 +1,4 @@
+import Tone from "./tone";
 import Resources from "./resources";
 import { TONES, IMAGES } from "conf";
 
@@ -17,11 +18,7 @@ const CONFIG = {
 	noteColor: "#c01",
 	sharpColor: "#008000",
 	lineColor: "#000",
-	helpLineColor: "rgba(0, 0, 0, 0.1)",
-	noteHandle: {
-		width: 3,
-		height: 51
-	}
+	helpLineColor: "rgba(0, 0, 0, 0.1)"
 };
 
 class Notes {
@@ -50,87 +47,12 @@ class Notes {
 			height: 0
 		};
 		this._currentX = CONFIG.startX;
-		this._mapping = {};
-		this._mappingArray = [];
 		this._canvas.addEventListener("click", e => {
-			let x = e.layerX;
-			let y = e.layerY;
-
-			let distances =  this._dim.lines.map(line => {
-				return {
-					line,
-					distance: Math.abs(line.y - y)
-				};
-			}).sort((a, b) => {
-				return a.distance - b.distance;
-			});
-
-			// exact
-			let tone = distances[0].line.tone;
-			let octave = distances[0].line.octave;
-
-			if (distances[0].distance > CONFIG.clickDistanceThreshold) {
-				// between - move bottom
-				let toneInd = distances[0].line.toneInd;
-				let direction = y > distances[0].line.y ? 1 : -1;
-				toneInd -= direction;
-				if (toneInd < 0) {
-					octave--;
-					toneInd = TONES.length - 1;
-				}
-				else if (toneInd > TONES.length - 1) {
-					octave++;
-					toneInd = 0;
-				}
-				tone = TONES[toneInd];
-			}
-
-			if (typeof this._onClick === "function") this._onClick({
-				tone,
-				octave,
-				x,
-				y
-			});
+			this._canvasClick(e);
 		});
 
-		// counting
-		let y = CONFIG.paddingTopBottom;
-		let mainItem = this._notesRange[this._isBass ? "bass" : "treble"];
-		let linesCount = mainItem.top.helpLine + CONFIG.lines + mainItem.bottom.helpLine;
-		let toneInd = TONES.indexOf(mainItem.top.tone);
-		let octave = mainItem.top.octave;
-		let ind = 0;
-
-		for (let i = 0; i < linesCount; i++) {
-			let tone = TONES[toneInd];
-			let line = {
-				tone,
-				toneInd,
-				octave,
-				y,
-				main: false,
-				ind
-			};
-			ind++;
-			if (i >= mainItem.top.helpLine && i < mainItem.top.helpLine + CONFIG.lines) line.main = true;
-			toneInd -= 2;
-			if (toneInd < 0) {
-				toneInd = TONES.length + toneInd;
-				octave--;
-			}
-			y += CONFIG.lineHeight + CONFIG.lineDistance;
-			this._dim.lines.push(line);
-			if (line.main) {
-				this._dim.mainLines.push(line);
-			}
-		}
-
-		this._dim.height = y + CONFIG.paddingTopBottom;
-
-		// dom append
-		this._parentEl.appendChild(this._canvas);
-		this.syncPort();
-		this.redraw();
+		this._build();
+		this.show();
 	}
 
 	/**
@@ -153,22 +75,26 @@ class Notes {
 		this._drawKey();
 	}
 
-	// C4 -> treble, below C4 bass
+	/**
+	 * Reset - show notes.
+	 */
+	show() {
+		this.syncPort();
+		this.resetOffset();
+		this.redraw();
+	}
 
 	/**
-	 * Draw a note.
+	 * Draw a tone.
 	 *
-	 * @param   {String}  tone  C...
-	 * @param   {Number}  octave 0-8
+	 * @param   {Tone}  tone  C...
 	 * @param   {Object}  [optsArg] Config
-	 * @param   {Boolean}  [optsArg.withTone = true] Draw note with tone sign
-	 * @param   {Boolean}  [optsArg.isSharp = false] Draw note with sharp sign
-	 * @param   {Number}  [optsArg.x = undefined] Draw note with own x value
+	 * @param   {Boolean}  [optsArg.withTone = true] Draw tone with tone sign
+	 * @param   {Number}  [optsArg.x = undefined] Draw tone with own x value
 	 */
-	drawNote(tone, octave, optsArg) {
+	drawTone(tone,optsArg) {
 		let opts = Object.assign({
 			withTone: true,
-			isSharp: false,
 			x: undefined
 		}, optsArg);
 
@@ -177,7 +103,7 @@ class Notes {
 			this.redraw();
 		}
 
-		let findData = this._findNote(tone, octave);
+		let findData = this._findTone(tone);
 
 		if (!findData) return;
 
@@ -186,45 +112,40 @@ class Notes {
 			delete opts.x;
 		}
 
-		this._drawNote(findData, opts);
+		this._drawTone(findData, opts);
 	}
 
 	/**
-	 * Draw notes.
+	 * Draw tones.
 	 *
-	 * @param   {Array}  notes  Array of objects { tone, octave }
+	 * @param   {Array}  tones  Array of Tone
 	 * @param   {Boolean}  [disableTone] Disable showing tone name
 	 */
-	drawNotes(notes, disableTone) {
+	drawTones(tones, disableTone) {
 		let hasSharp = false;
 		let items = [];
-		notes.forEach(i => {
-			let isSharp = i.tone.indexOf("#") != -1;
-			let findData = this._findNote(i.tone.replace("#", ""), i.octave);
+		tones.forEach(tone => {
+			let findData = this._findTone(tone);
 
 			if (findData) {
-				if (isSharp) {
+				if (!hasSharp && findData.tone.isSharp) {
 					hasSharp = true;
 				}
 
-				items.push({
-					findData,
-					isSharp
-				});
+				items.push(findData);
 			}
 		});
 
 		items.forEach(i => {
 			if (hasSharp) {
-				i.findData.x += 10;
+				i.x += 10;
 			}
 
-			if (!i.isSharp && hasSharp) {
-				i.findData.x += CONFIG.sharpOffset;
+			if (!i.tone.isSharp && hasSharp) {
+				i.x += CONFIG.sharpOffset;
 			}
 
-			this._drawNote(i.findData, {
-				isSharp: i.isSharp,
+			this._drawTone(i, {
 				withTone: !disableTone
 			});
 		});
@@ -246,6 +167,46 @@ class Notes {
 	 */
 	resetOffset() {
 		this._currentX = CONFIG.startX;
+	}
+
+	/**
+	 * Build all lines.
+	 */
+	_build() {
+		// counting
+		let y = CONFIG.paddingTopBottom;
+		let mainItem = this._notesRange[this._isBass ? "bass" : "treble"];
+		let linesCount = mainItem.top.helpLine + CONFIG.lines + mainItem.bottom.helpLine;
+		let toneInd = TONES.indexOf(mainItem.top.tone.simple);
+		let octave = mainItem.top.tone.octave;
+		let ind = 0;
+
+		for (let i = 0; i < linesCount; i++) {
+			let tone = TONES[toneInd];
+			let line = {
+				tone: new Tone(tone, octave),
+				y,
+				main: false,
+				ind
+			};
+			ind++;
+			if (i >= mainItem.top.helpLine && i < mainItem.top.helpLine + CONFIG.lines) line.main = true;
+			toneInd -= 2;
+			if (toneInd < 0) {
+				toneInd = TONES.length + toneInd;
+				octave--;
+			}
+			y += CONFIG.lineHeight + CONFIG.lineDistance;
+			this._dim.lines.push(line);
+			if (line.main) {
+				this._dim.mainLines.push(line);
+			}
+		}
+
+		this._dim.height = y + CONFIG.paddingTopBottom;
+
+		// dom append
+		this._parentEl.appendChild(this._canvas);
 	}
 
 	/**
@@ -315,23 +276,23 @@ class Notes {
 	/**
 	 * Find note by tone and octave.
 	 *
-	 * @param   {String}  tone  C...
-	 * @param   {Number}  octave 0-8
+	 * @param   {Tone}  tone  C...
 	 * @return  {Object}
 	 */
-	_findNote(tone, octave) {
-		let toneInd = TONES.indexOf(tone);
+	_findTone(tone) {
+		let toneInd = TONES.indexOf(tone.simple);
 		let find = null;
 		let exact = false;
 		let direction = 0;
 
 		for (let i = this._dim.lines.length - 1; i >= 0; i--) {
 			let item = this._dim.lines[i];
+			let itemToneInd = TONES.indexOf(item.tone.simple);
 
-			if (item.octave == octave && Math.abs(item.toneInd - toneInd) <= 1) {
+			if (item.tone.octave == tone.octave && Math.abs(itemToneInd - toneInd) <= 1) {
 				find = item;
-				exact = toneInd == item.toneInd;
-				direction = exact ? 0 : (item.toneInd > toneInd ? 1 : -1);
+				exact = toneInd == itemToneInd;
+				direction = exact ? 0 : (itemToneInd > toneInd ? 1 : -1);
 				break;
 			}
 		}
@@ -341,8 +302,7 @@ class Notes {
 			find,
 			direction,
 			exact,
-			tone,
-			octave
+			tone
 		} : null);
 	}
 
@@ -354,14 +314,13 @@ class Notes {
 	 * @param   {Boolean}  [optsArg.withTone = true] Draw note with tone sign
 	 * @param   {Boolean}  [optsArg.isSharp = false] Draw note with sharp sign
 	 */
-	_drawNote(findData, optsArg) {
+	_drawTone(findData, optsArg) {
 		let opts = Object.assign({
-			withTone: true,
-			isSharp: false
+			withTone: true
 		}, optsArg);
 
 		if (opts.withTone) {
-			this._drawNoteHelpLines(findData);
+			this._drawToneHelpLines(findData);
 		}
 
 		// note
@@ -380,14 +339,14 @@ class Notes {
 			// note name
 			this._ctx.fillStyle = CONFIG.noteColor;
 			this._ctx.font = CONFIG.fontFamily;
-			this._ctx.fillText(findData.tone, findData.x + offset + (findData.tone == "B" ? 1 : 0), noteY + CONFIG.noteSize - offset);
+			this._ctx.fillText(findData.tone.simple, findData.x + offset + (findData.tone.simple == "B" ? 1 : 0), noteY + CONFIG.noteSize - offset);
 		}
 		else {
-			this._drawNoteHelpLines(findData);
+			this._drawToneHelpLines(findData);
 		}
 
 		// sharp?
-		if (opts.isSharp) {
+		if (findData.tone.isSharp) {
 			this._ctx.fillStyle = CONFIG.sharpColor;
 			this._ctx.font = CONFIG.fontFamily;
 			this._ctx.fillText("#", findData.x - CONFIG.sharpSignOffset, noteY + CONFIG.noteSize - offset);
@@ -399,7 +358,7 @@ class Notes {
 	 *
 	 * @param   {Object}  findData Find note data object
 	 */
-	_drawNoteHelpLines(findData) {
+	_drawToneHelpLines(findData) {
 		// note help lines
 		let lastInd = this._dim.mainLines[this._dim.mainLines.length - 1].ind;
 
@@ -419,7 +378,7 @@ class Notes {
 			for (let i = lastInd + 1, max = findData.find.ind + findData.direction; i <= max; i++) {
 				let item = this._dim.lines[i];
 
-				if (!item || (i == max && findData.tone == "C" && findData.octave == 1)) break;
+				if (!item || (i == max && findData.tone.simple == "C" && findData.tone.octave == 1)) break;
 				
 				this._ctx.beginPath();
 				this._ctx.moveTo(findData.x - 5, item.y);
@@ -429,6 +388,51 @@ class Notes {
 
 			this._ctx.lineWidth = 1;
 		}
+	}
+
+	/**
+	 * Click on canvas.
+	 *
+	 * @param   {MouseEvent}  e Click
+	 */
+	_canvasClick(e) {
+		let x = e.layerX;
+		let y = e.layerY;
+
+		let distances =  this._dim.lines.map(line => {
+			return {
+				line,
+				distance: Math.abs(line.y - y)
+			};
+		}).sort((a, b) => {
+			return a.distance - b.distance;
+		});
+
+		// exact
+		let tone = distances[0].line.tone.tone;
+		let octave = distances[0].line.tone.octave;
+
+		if (distances[0].distance > CONFIG.clickDistanceThreshold) {
+			// between - move bottom
+			let toneInd = TONES.indexOf(tone);
+			let direction = y > distances[0].line.y ? 1 : -1;
+			toneInd -= direction;
+			if (toneInd < 0) {
+				octave--;
+				toneInd = TONES.length - 1;
+			}
+			else if (toneInd > TONES.length - 1) {
+				octave++;
+				toneInd = 0;
+			}
+			tone = TONES[toneInd];
+		}
+
+		if (typeof this._onClick === "function") this._onClick({
+			tone: new Tone(tone, octave),
+			x,
+			y
+		});
 	}
 }
 

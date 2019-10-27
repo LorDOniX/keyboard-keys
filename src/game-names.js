@@ -1,6 +1,5 @@
 import Keyboard from "keyboard";
-import { TONES } from "conf";
-import { domCreate } from "utils";
+import { domCreate, randomTone } from "utils";
 
 // timeout [ms]
 const TIMEOUT = 5000;
@@ -15,24 +14,7 @@ class GameNames {
 		this._timeoutId = null;
 		this._guessTimeoutID = null;
 		this._keyboard = new Keyboard(this._dom.keyboard, key => {
-			if (!this._timeoutId) return;
-
-			let tone = key.tone;
-
-			if (Array.isArray(key.tone)) {
-				tone = key.tone[0].replace("#", "");
-			}
-
-			if (tone == this._currentTone) {
-				// spravne
-				this._showInfo(`Success, tone was ${tone}`, true);
-				clearTimeout(this._timeoutId);
-				this._timeoutId = null;
-				this._guessNewNote();
-			}
-			else {
-				this._showInfo("Wrong, the tone is incorrect!", false);
-			}
+			this._onKey(key);
 		});
 	}
 
@@ -49,8 +31,7 @@ class GameNames {
 	 * Show tab.
 	 */
 	show() {
-		this._keyboard.syncPort();
-		this._keyboard.redraw();
+		this._keyboard.show();
 	}
 
 	/**
@@ -139,9 +120,7 @@ class GameNames {
 		let newTone = this._currentTone;
 		
 		while (newTone == this._currentTone) {
-			let ind = Math.floor(Math.random() * (TONES.length - 1));
-
-			newTone = TONES[ind];
+			newTone = randomTone();
 		}
 
 		this._currentTone = newTone;
@@ -182,6 +161,26 @@ class GameNames {
 		}
 
 		this._dom.infoPanel.textContent = msg;
+	}
+
+	/**
+	 * On keyboard key.
+	 *
+	 * @param   {Object}  key Key data
+	 */
+	_onKey(key) {
+		if (!this._timeoutId) return;
+
+		if (key.tone.simple == this._currentTone) {
+			// correct
+			this._showInfo(`Success, tone was ${key.tone.simple}`, true);
+			clearTimeout(this._timeoutId);
+			this._timeoutId = null;
+			this._guessNewNote();
+		}
+		else {
+			this._showInfo("Wrong, the tone is incorrect!", false);
+		}
 	}
 };
 

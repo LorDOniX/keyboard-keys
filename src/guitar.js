@@ -1,4 +1,5 @@
-import { ALL_TONES_SHARP, GUITAR_TONES } from "conf";
+import { GUITAR_POINTED_FRETS } from "conf";
+import { generateStrings } from "utils";
 
 const CONFIG = {
 	strings: 6,
@@ -11,7 +12,7 @@ const CONFIG = {
 
 class Guitar {
 	/**
-	 * Notes.
+	 * Guitar fretboard.
 	 *
 	 * @param   {Element}  parentEl Append element
 	 * @param   {Function}  onClick  Callback - note area click
@@ -49,11 +50,16 @@ class Guitar {
 		this.redraw();
 	}
 
+	/**
+	 * Set guitar tuning - all strings configuration like standard tuning difference.
+	 *
+	 * @param   {Array}  config Array of numbers - equal strings length
+	 */
 	setTune(config) {
 		let defConfig = [];
 
 		for (let i = 0; i < CONFIG.strings; i++) defConfig.push(0);
-		this._strings = this._generateStrings(config || defConfig);
+		this._strings = generateStrings(CONFIG.strings, CONFIG.frets, config || defConfig);
 
 		this.redraw();
 	}
@@ -68,25 +74,29 @@ class Guitar {
 		this._drawTones();
 	}
 
-	// C4 -> treble, below C4 bass
+	/**
+	 * Reset - show guitar fretboard.
+	 */
+	show() {
+		this.syncPort();
+		this.redraw();
+	}
 
 	/**
-	 * Draw a note.
+	 * Draw a tone.
 	 *
 	 * @param   {String}  tone  C...
 	 * @param   {Number}  octave 0-8
 	 * @param   {Object}  [optsArg] Config
-	 * @param   {Boolean}  [isSharp] Sharp note?
+	 * @param   {Boolean}  [isSharp] Sharp tone?
 	 */
-	drawNote(tone, octave, isSharp) {
-		tone = `${tone}${isSharp ? "#" : ""}`;
-
+	drawTone(tone) {
 		this._drawBackground();
 		this._drawLines();
 		
 		this._strings.forEach((string, ind) => {
 			string.forEach(toneItem => {
-				if (toneItem.tone == tone && toneItem.octave == octave) {
+				if (toneItem.tone.equal(tone)) {
 					this._fillCell(toneItem.fret, ind);
 				}
 			});
@@ -96,14 +106,19 @@ class Guitar {
 		this._drawTones();
 	}
 
-	drawNotes(notes) {
+	/**
+	 * Draw multiple tones.
+	 *
+	 * @param   {Array}  tones Array of tones
+	 */
+	drawTones(tones) {
 		this._drawBackground();
 		this._drawLines();
 		
 		this._strings.forEach((string, ind) => {
 			string.forEach(toneItem => {
-				for (let item of notes) {
-					if (toneItem.tone == item.tone && toneItem.octave == item.octave) {
+				for (let tone of tones) {
+					if (toneItem.tone.equal(tone)) {
 						this._fillCell(toneItem.fret, ind);
 						break;
 					}
@@ -163,12 +178,15 @@ class Guitar {
 		}
 	}
 
+	/**
+	 * Draw fretboard circles.
+	 */
 	_drawCircles() {
 		this._ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
 
 		let circleWidth = 8;
 
-		[3, 5, 7, 9, 12, 15, 17, 19, 21, 24].forEach(fret => {
+		GUITAR_POINTED_FRETS.forEach(fret => {
 			if (fret > CONFIG.frets - 1) return;
 
 			let x = CONFIG.padding + fret * this._dim.cellWidth + (fret + 1) * CONFIG.lineWidth + Math.floor((this._dim.cellWidth - circleWidth / 2) / 2);
@@ -195,6 +213,9 @@ class Guitar {
 		});
 	}
 
+	/**
+	 * Draw all tones.
+	 */
 	_drawTones() {
 		this._ctx.fillStyle = "#000";
 		this._ctx.font = "bold 16px Arial";
@@ -205,8 +226,8 @@ class Guitar {
 		this._strings.forEach(string => {
 			x = CONFIG.padding + CONFIG.lineWidth;
 
-			string.forEach(tone => {
-				let text = `${tone.tone}${tone.octave}`;
+			string.forEach(stringItem => {
+				let text = stringItem.tone.toString();
 				let textDim = this._ctx.measureText(text);
 				this._ctx.fillText(text, x + Math.floor((this._dim.cellWidth - textDim.width) / 2), y + Math.floor(CONFIG.cellHeight / 2 + 5));
 				x += this._dim.cellWidth + CONFIG.lineWidth;
@@ -216,45 +237,12 @@ class Guitar {
 		});
 	}
 
-	_generateStrings(config) {
-		let strings = [];
-
-		for (let i = 0, max = Math.min(GUITAR_TONES.length, CONFIG.strings); i < max; i++) {
-			let stringData = GUITAR_TONES[i];
-			let string = [];
-			let ind = ALL_TONES_SHARP.indexOf(stringData.startTone.tone) + config[config.length - 1 - i];
-			let octave = stringData.startTone.octave;
-			let maxLen = ALL_TONES_SHARP.length;
-
-			if (ind < 0) {
-				ind += maxLen;
-				octave--;
-			}
-			else if (ind >= maxLen) {
-				ind -= maxLen;
-				octave++;
-			}
-
-			for (let x = 0; x < CONFIG.frets; x++) {
-				let tone = ALL_TONES_SHARP[ind];
-				string.push({
-					tone,
-					octave,
-					fret: x
-				});
-				ind++;
-				if (ind == maxLen) {
-					ind = 0;
-					octave++;
-				}
-			}
-
-			strings.push(string);
-		}
-
-		return strings;
-	}
-
+	/**
+	 * Fill one fret.
+	 *
+	 * @param   {Number}  x Position on fretboard
+	 * @param   {Number}  y Position on fretboard
+	 */
 	_fillCell(x, y) {
 		let drawX = CONFIG.padding + x * this._dim.cellWidth + (x + 1) * CONFIG.lineWidth;
 		let drawY = CONFIG.padding + y * CONFIG.cellHeight + (y + 1) * CONFIG.lineHeight;
@@ -263,6 +251,11 @@ class Guitar {
 		this._ctx.fillRect(drawX, drawY, this._dim.cellWidth, CONFIG.cellHeight);
 	}
 
+	/**
+	 * Click on canvas.
+	 *
+	 * @param   {MouseEvent}  e Click
+	 */
 	_canvasClick(e) {
 		let x = e.layerX;
 		let y = e.layerY;

@@ -1,6 +1,7 @@
 import Resources from "./resources";
 import KeyboardData from "keyboard-data";
-import { IMAGES } from "conf";
+import { IMAGES, BLACK_KEY_POSITION } from "conf";
+import { blackKeyPosition } from "utils";
 
 class Keyboard {
 	/**
@@ -19,18 +20,7 @@ class Keyboard {
 		this._lastRatio = -1;
 		this._parentEl.appendChild(this._canvas);
 		this._canvas.addEventListener("click", e => {
-			let x = e.layerX;
-			let y = e.layerY;
-
-			if (this._keyboardData) {
-				let find = this._keyboardData.getKey(x, y);
-
-				if (find) {
-					this.redraw();
-					this._drawKey(find);
-					if (typeof this._onKey === "function") this._onKey(find);
-				}
-			}
+			this._canvasClick(e);
 		});
 		this.syncPort();
 	}
@@ -63,38 +53,36 @@ class Keyboard {
 	}
 
 	/**
-	 * Draw key.
-	 *
-	 * @param   {String}  tone  C...
-	 * @param   {Number}  octave 0-8
+	 * Reset - show keyboard.
 	 */
-	drawKey(tone, octave) {
+	show() {
+		this.syncPort();
+		this.redraw();
+	}
+
+	/**
+	 * Draw tone.
+	 *
+	 * @param   {Tone}  tone  C...
+	 */
+	drawTone(tone) {
 		if (this._keyboardData) {
 			this.redraw();
-
-			let keyData = this._keyboardData.findByTone(tone, octave);
-
-			if (keyData) {
-				this._drawKey(keyData);
-			}
+			this._drawTone(this._keyboardData.findByTone(tone));
 		}
 	}
 
 	/**
-	 * Draw multiple keys.
+	 * Draw multiple tones.
 	 *
-	 * @param   {Array}  keys Array of objects { tone, octave }
+	 * @param   {Array}  keys Array of Tone
 	 */
-	drawKeys(keys) {
+	drawTones(tones) {
 		if (this._keyboardData) {
 			this.redraw();
 
-			keys.forEach(item => {
-				let keyData = this._keyboardData.findByTone(item.tone, item.octave);
-
-				if (keyData) {
-					this._drawKey(keyData);
-				}
+			tones.forEach(tone => {
+				this._drawTone(this._keyboardData.findByTone(tone));
 			});
 		}
 	}
@@ -102,9 +90,8 @@ class Keyboard {
 	/**
 	 * Draw key from data.
 	 *
-	 * @param   {Object}  keyData See keyboardData.getKey output
 	 */
-	_drawKey(keyData) {
+	_drawTone(keyData) {
 		if (!keyData) return;
 
 		this._ctx.fillStyle = "rgba(255, 0, 0, 0.5)";
@@ -113,27 +100,22 @@ class Keyboard {
 			this._ctx.fillRect(keyData.x, keyData.y, keyData.width, keyData.height);
 		}
 		else {
-			let isFlat = ["C", "D", "F", "G", "A"].indexOf(keyData.tone) != -1;
-			let find = this._keyboardData.findByTone(keyData.tone + (isFlat ? "#" : "b"), keyData.octave);
+			let bkp = blackKeyPosition(keyData.tone);
 
-			if (find) {
-				let newY = find.y + find.height;
+			if (bkp !== null) {
+				let blackKey = this._keyboardData.firstBlackKey;
+				let newY = blackKey.y + blackKey.height;
 				let bottomY = keyData.y + keyData.height;
 				let height = bottomY - newY;
 				let w = keyData.width;
 				let startX = keyData.x;
 
-				switch (keyData.tone) {
-					// left
-					case "C":
-					case "F":
+				switch (bkp) {
+					case BLACK_KEY_POSITION.right:
 						w *= 0.6;
 						break;
 
-					// middle
-					case "D":
-					case "G":
-					case "A":
+					case BLACK_KEY_POSITION.middle:
 						if (keyData.octave == 0) {
 							w *= 0.6;
 						}
@@ -144,9 +126,7 @@ class Keyboard {
 						
 						break;
 
-					// right
-					case "E":
-					case "B":
+					case BLACK_KEY_POSITION.left:
 						w *= 0.6;
 						startX += keyData.width * 0.4;
 						break;
@@ -155,7 +135,7 @@ class Keyboard {
 				// top part
 				this._ctx.fillRect(startX, keyData.y, w, newY - keyData.y);
 				// bottom part
-				this._ctx.fillRect(keyData.x, find.y + find.height, keyData.width, height);
+				this._ctx.fillRect(keyData.x, newY, keyData.width, height);
 			}
 			else {
 				this._ctx.fillRect(keyData.x, keyData.y, keyData.width, keyData.height);
@@ -182,6 +162,26 @@ class Keyboard {
 			this._ctx.rect(item.x, item.y, item.width, item.height);
 			this._ctx.stroke();
 		});
+	}
+
+	/**
+	 * Click on canvas.
+	 *
+	 * @param   {MouseEvent}  e Click
+	 */
+	_canvasClick(e) {
+		let x = e.layerX;
+		let y = e.layerY;
+
+		if (this._keyboardData) {
+			let keyData = this._keyboardData.getKey(x, y);
+
+			if (keyData) {
+				this.redraw();
+				this._drawTone(keyData);
+				if (typeof this._onKey === "function") this._onKey(keyData);
+			}
+		}
 	}
 }
 
