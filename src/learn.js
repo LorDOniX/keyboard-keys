@@ -2,8 +2,8 @@ import Keyboard from "keyboard";
 import Notes from "notes";
 import Chords from "chords";
 import Guitar from "guitar";
-import Tone from "tone";
-import { KEYS_SIGNATURES, NOTES_INC_RANGE, BETWEEN_NOTES_TREBLE, BETWEEN_NOTES_BASS, ON_LINE_NOTES_TREBLE, ON_LINE_NOTES_BASS, GUITAR_TUNES } from "conf";
+import { Tone, NOTES_INC_RANGE, BETWEEN_NOTES_TREBLE, BETWEEN_NOTES_BASS, ON_LINE_NOTES_TREBLE, ON_LINE_NOTES_BASS } from "tone";
+import { KEYS_SIGNATURES, GUITAR_TUNES } from "conf";
 import { domCreate, getSignatureTones } from "utils";
 import { OCTAVES } from "./conf";
 
@@ -373,7 +373,7 @@ class Learn {
 	_onKey(key) {
 		let middleC = Tone.middleC();
 
-		this._dom.h1Tone.textContent = key.tone.toString();
+		this._dom.h1Tone.textContent = key.tone.toString(true);
 		this._guitar.drawTone(key.tone);
 
 		if (key.tone.octave >= middleC.octave) {
@@ -397,6 +397,7 @@ class Learn {
 	 * @param   {Object}  data Data in object
 	 */
 	_onGuitar(data) {
+		this._dom.h1Tone.textContent = data.tone.toString(true);
 		this._keyboard.drawTone(data.tone);
 
 		if (data.tone.octave >= Tone.middleC().octave) {

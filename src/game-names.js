@@ -1,5 +1,6 @@
 import Keyboard from "keyboard";
-import { domCreate, randomTone } from "utils";
+import { Tone } from "tone";
+import { domCreate } from "utils";
 
 // timeout [ms]
 const TIMEOUT = 5000;
@@ -117,18 +118,18 @@ class GameNames {
 	 * One game cycle.
 	 */
 	_gameCycle() {
-		let newTone = this._currentTone;
+		let newTone = this._currentTone.simple;
 		
-		while (newTone == this._currentTone) {
-			newTone = randomTone();
+		while (newTone == this._currentTone.simple) {
+			newTone = Tone.randomTone();
 		}
 
 		this._currentTone = newTone;
-		this._showInfo(`Find tone ${this._currentTone}`);
+		this._showInfo(`Find tone ${this._currentTone.simple}`);
 		this._timeoutId = setTimeout(() => {
 			this._timeoutId = null;
 			// error, note was not found
-			this._showInfo(`Tone ${this._currentTone} was not found!`, false);
+			this._showInfo(`Tone ${this._currentTone.simple} was not found!`, false);
 			this._guessNewNote();
 		}, TIMEOUT);
 	}
@@ -171,7 +172,7 @@ class GameNames {
 	_onKey(key) {
 		if (!this._timeoutId) return;
 
-		if (key.tone.simple == this._currentTone) {
+		if (key.tone.simple == this._currentTone.simple) {
 			// correct
 			this._showInfo(`Success, tone was ${key.tone.simple}`, true);
 			clearTimeout(this._timeoutId);

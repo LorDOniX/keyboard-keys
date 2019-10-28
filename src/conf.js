@@ -1,5 +1,3 @@
-import Tone from "./tone";
-
 export const OCTAVES = 7;
 export const TONES = ["C", "D", "E", "F", "G", "A", "B"];
 export const ALL_TONES_SHARP = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
@@ -34,6 +32,13 @@ export const FLAT_TO_SHARP_MAPPING = {
 	"Gb": { tone: "F#", octave: 0 },
 	"Ab": { tone: "G#", octave: 0 },
 	"Bb": { tone: "A#", octave: 0 }
+};
+export const SHARP_TO_FLAT = {
+	"C#": "Db",
+	"D#": "Eb",
+	"F#": "Gb",
+	"G#": "Ab",
+	"A#": "Bb"
 };
 export const KEYS_SIGNATURES = [{
 		name: "Cb dur",
@@ -117,57 +122,6 @@ KEYS_SIGNATURES.forEach(i => {
 	KEYS_SIGNATURES_OBJ[i.name] = i;
 });
 
-export const NOTES_RANGE = {
-	treble: {
-		top: {
-			helpLine: 9,
-			tone: new Tone("C8")
-		},
-		bottom: {
-			helpLine: 1,
-			tone: new Tone("C4")
-		}
-	},
-	bass: {
-		top: {
-			helpLine: 1,
-			tone: new Tone("C4")
-		},
-		bottom: {
-			helpLine: 6,
-			tone: new Tone("B0")
-		}
-	}
-};
-
-export const NOTES_INC_RANGE = {
-	treble: {
-		top: {
-			helpLine: 9,
-			tone: new Tone("C8")
-		},
-		bottom: {
-			helpLine: 2,
-			tone: new Tone("A3")
-		}
-	},
-	bass: {
-		top: {
-			helpLine: 2,
-			tone: new Tone("E4")
-		},
-		bottom: {
-			helpLine: 6,
-			tone: new Tone("B0")
-		}
-	}
-};
-
-export const BETWEEN_NOTES_TREBLE = [new Tone("F4"), new Tone("A4"), new Tone("C5"), new Tone("E5")];
-export const BETWEEN_NOTES_BASS = [new Tone("A2"), new Tone("C3"), new Tone("E3"), new Tone("G3")];
-export const ON_LINE_NOTES_TREBLE = [new Tone("E4"), new Tone("G4"), new Tone("B4"), new Tone("D5"), new Tone("F5")];
-export const ON_LINE_NOTES_BASS = [new Tone("G2"), new Tone("B2"), new Tone("D3"), new Tone("F3"), new Tone("A3")];
-
 export const IMAGES = {
 	treble: {
 		src: "/img/treble.png",
@@ -186,36 +140,6 @@ export const IMAGES = {
 		height: 330
 	}
 };
-
-export const KEYBOARD_RANGE = [new Tone("A0"), new Tone("C8")];
-
-export const GUITAR_TONES = [
-	{
-		string: "E",
-		order: 1,
-		startTone: new Tone("E4")
-	}, {
-		string: "B",
-		order: 2,
-		startTone: new Tone("B3")
-	}, {
-		string: "G",
-		order: 3,
-		startTone: new Tone("G3")
-	}, {
-		string: "D",
-		order: 4,
-		startTone: new Tone("D3")
-	}, {
-		string: "A",
-		order: 5,
-		startTone: new Tone("A2")
-	}, {
-		string: "E",
-		order: 6,
-		startTone: new Tone("E2")
-	}
-];
 
 export const GUITAR_POINTED_FRETS = [3, 5, 7, 9, 12, 15, 17, 19, 21, 24];
 

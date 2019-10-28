@@ -1,7 +1,6 @@
 import Resources from "./resources";
 import KeyboardData from "keyboard-data";
 import { IMAGES, BLACK_KEY_POSITION } from "conf";
-import { blackKeyPosition } from "utils";
 
 class Keyboard {
 	/**
@@ -100,7 +99,7 @@ class Keyboard {
 			this._ctx.fillRect(keyData.x, keyData.y, keyData.width, keyData.height);
 		}
 		else {
-			let bkp = blackKeyPosition(keyData.tone);
+			let bkp = keyData.tone.blackKeyPosition();
 
 			if (bkp !== null) {
 				let blackKey = this._keyboardData.firstBlackKey;

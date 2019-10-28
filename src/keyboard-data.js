@@ -1,4 +1,4 @@
-import Tone from "tone";
+import { Tone } from "tone";
 import { TONES, TONES_SHARP, OCTAVES } from "conf";
 
 // key definitions - mapping to image

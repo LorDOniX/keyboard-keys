@@ -1,6 +1,5 @@
-import Tone from "tone";
+import { Tone } from "tone";
 import { CHORDS_KEYS, CHORDS_NOTES } from "conf";
-import { generateChord } from "utils";
 
 class Chords {
 	/**
@@ -66,7 +65,7 @@ class Chords {
 		let tone = this._toneSelectEl.value;
 		let octave = parseFloat(this._octaveSelectEl.value);
 		let key = this._keySelectEl.value;
-		let chordNotes = generateChord(new Tone(tone, octave), key);
+		let chordNotes = (new Tone(tone, octave)).generateChord(key);
 
 		this._owner.showChord(`${key.toLowerCase()} ${tone}`, chordNotes);
 	}

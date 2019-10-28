@@ -59,6 +59,17 @@ class Main {
 		});
 		// def. tab
 		this._setActive(localStorage.getItem(LS_TAB_KEY) || this._tabsData[0].name);
+
+		let resizeID = null;
+		window.addEventListener("resize", () => {
+			if (resizeID) {
+				clearTimeout(resizeID);
+				resizeID = null;
+			}
+			resizeID = setTimeout(() => {
+				this._active.show();
+			}, 333);
+		});
 	}
 
 	/**

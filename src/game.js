@@ -1,8 +1,8 @@
 import Keyboard from "keyboard";
 import Notes from "notes";
-import Tone from "tone";
-import { NOTES_RANGE, KEYS_SIGNATURES, TONES, KEYS_SIGNATURES_OBJ, C_DUR, KEYBOARD_RANGE } from "conf";
-import { domCreate, toneToSignature, generateTones } from "utils";
+import { Tone, NOTES_RANGE, KEYBOARD_RANGE } from "tone";
+import { KEYS_SIGNATURES, TONES, KEYS_SIGNATURES_OBJ, C_DUR } from "conf";
+import { domCreate } from "utils";
 
 // game variables
 const DATA = {
@@ -401,7 +401,7 @@ class Game {
 		let endOctave = parseFloat(this._dom.selectEndOctave.value);
 		let isSharp = this._dom.selectTonesType.value == "1";
 
-		return generateTones(new Tone(tone, octave), new Tone(endTone, endOctave), isSharp);
+		return (new Tone(tone, octave)).generateTones(new Tone(endTone, endOctave), isSharp);
 	}
 
 	/**
@@ -530,7 +530,7 @@ class Game {
 
 		let signatureKey = this._dom.selectSignature.value;
 		let signature = KEYS_SIGNATURES_OBJ[signatureKey];
-		let tts = toneToSignature(signature, this._gameData.curTone);
+		let tts = this._gameData.curTone.toSignature(signature);
 
 		if (key.tone.equal(tts)) {
 			this._gameData.correct++;

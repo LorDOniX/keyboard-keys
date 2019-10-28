@@ -218,7 +218,6 @@ class Guitar {
 	 */
 	_drawTones() {
 		this._ctx.fillStyle = "#000";
-		this._ctx.font = "bold 16px Arial";
 
 		let x;
 		let y = CONFIG.padding + CONFIG.lineHeight;
@@ -226,10 +225,11 @@ class Guitar {
 		this._strings.forEach(string => {
 			x = CONFIG.padding + CONFIG.lineWidth;
 
-			string.forEach(stringItem => {
-				let text = stringItem.tone.toString();
+			string.forEach((stringItem, ind) => {
+				let text = stringItem.tone.toString(true);
+				this._ctx.font = `bold ${text.length == 2 ? 16 : (!ind ? 12 : 14)}px Arial`;
 				let textDim = this._ctx.measureText(text);
-				this._ctx.fillText(text, x + Math.floor((this._dim.cellWidth - textDim.width) / 2), y + Math.floor(CONFIG.cellHeight / 2 + 5));
+				this._ctx.fillText(text, x + Math.floor((this._dim.cellWidth - textDim.width) / 2) + (!ind ? -2 : 0), y + Math.floor(CONFIG.cellHeight / 2 + 5));
 				x += this._dim.cellWidth + CONFIG.lineWidth;
 			});
 
