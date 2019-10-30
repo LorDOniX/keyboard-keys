@@ -1,15 +1,15 @@
 import Keyboard from "keyboard";
 import Notes from "notes";
-import { Tone, NOTES_RANGE, KEYBOARD_RANGE } from "tone";
-import { KEYS_SIGNATURES, TONES, KEYS_SIGNATURES_OBJ, C_DUR } from "conf";
+import { Note, NOTES_RANGE, KEYBOARD_RANGE } from "note";
+import { KEYS_SIGNATURES, NOTES, KEYS_SIGNATURES_OBJ, C_DUR } from "conf";
 import { domCreate } from "utils";
 
 // game variables
 const DATA = {
-	tonesCount: [25, 50, 75, 100],
-	tonesTime: [5, 10, 15, 20, 25, 30],
-	tonesType: ["Non sharp", "Sharp"],
-	tonesShow: ["Empty", "With tone"],
+	notesCount: [25, 50, 75, 100],
+	notesTime: [5, 10, 15, 20, 25, 30],
+	notesType: ["Non sharp", "Sharp"],
+	notesShow: ["Empty", "With tone"],
 	sounds: ["With sound", "No sound"]
 };
 
@@ -35,8 +35,8 @@ class Game {
 			wrong: 0,
 			timerID: null,
 			guessTimerID: null,
-			tones: [],
-			curTone: null
+			notes: [],
+			curNote: null
 		};
 	}
 
@@ -129,16 +129,16 @@ class Game {
 					}]
 				}, {
 					el: "span",
-					child: ["Start tone", {
+					child: ["Start note", {
 						el: "select",
-						child: TONES.map(item => {
+						child: NOTES.map(item => {
 							return {
 								el: "option",
 								value: item,
 								text: item
 							};
 						}),
-						_export: "selectStartTone"
+						_export: "selectStartNote"
 					}]
 				}, {
 					el: "span",
@@ -155,16 +155,16 @@ class Game {
 					}]
 				}, {
 					el: "span",
-					child: ["End tone", {
+					child: ["End note", {
 						el: "select",
-						child: TONES.map(item => {
+						child: NOTES.map(item => {
 							return {
 								el: "option",
 								value: item,
 								text: item
 							};
 						}),
-						_export: "selectEndTone"
+						_export: "selectEndNote"
 					}]
 				}, {
 					el: "span",
@@ -181,29 +181,29 @@ class Game {
 					}]
 				}, {
 					el: "span",
-					child: ["Tones count", {
+					child: ["Notes count", {
 						el: "select",
-						child: DATA.tonesCount.map(item => {
+						child: DATA.notesCount.map(item => {
 							return {
 								el: "option",
 								value: item,
 								text: item
 							};
 						}),
-						_export: "selectTonesCount"
+						_export: "selectNotesCount"
 					}]
 				}, {
 					el: "span",
-					child: ["Per tone time", {
+					child: ["Per note time", {
 						el: "select",
-						child: DATA.tonesTime.map(item => {
+						child: DATA.notesTime.map(item => {
 							return {
 								el: "option",
 								value: item,
 								text: item
 							};
 						}),
-						_export: "selectTonesTime"
+						_export: "selectNotesTime"
 					}, "s"]
 				}]
 			}, {
@@ -211,29 +211,29 @@ class Game {
 				class: "game-control",
 				child: [{
 					el: "span",
-					child: ["Tones type", {
+					child: ["Notes type", {
 						el: "select",
-						child: DATA.tonesType.map((item, ind) => {
+						child: DATA.notesType.map((item, ind) => {
 							return {
 								el: "option",
 								value: ind,
 								text: item
 							};
 						}),
-						_export: "selectTonesType"
+						_export: "selectNotesType"
 					}]
 				}, {
 					el: "span",
-					child: ["Tones show", {
+					child: ["Notes show", {
 						el: "select",
-						child: DATA.tonesShow.map((item, ind) => {
+						child: DATA.notesShow.map((item, ind) => {
 							return {
 								el: "option",
 								value: ind,
 								text: item
 							};
 						}),
-						_export: "selectTonesShow"
+						_export: "selectNotesShow"
 					}]
 				}, {
 					el: "span",
@@ -254,16 +254,16 @@ class Game {
 						el: "button",
 						text: "Easy mode",
 						onclick: () => {
-							let middleC = Tone.middleC();
+							let middleC = Note.middleC();
 
 							this._dom.selectSignature.value = C_DUR;
-							this._dom.selectTonesCount.value = DATA.tonesCount[1];
-							this._dom.selectTonesTime.value = DATA.tonesTime[1];
-							this._dom.selectTonesType.value = 0;
-							this._dom.selectTonesShow.value = 1;
-							this._dom.selectStartTone.value = middleC.tone;
+							this._dom.selectNotesCount.value = DATA.notesCount[1];
+							this._dom.selectNotesTime.value = DATA.notesTime[1];
+							this._dom.selectNotesType.value = 0;
+							this._dom.selectNotesShow.value = 1;
+							this._dom.selectStartNote.value = middleC.note;
 							this._dom.selectStartOctave.value = middleC.octave;
-							this._dom.selectEndTone.value = middleC.tone;
+							this._dom.selectEndNote.value = middleC.note;
 							this._dom.selectEndOctave.value = middleC.octave + 2;
 						}
 					}
@@ -273,16 +273,16 @@ class Game {
 						el: "button",
 						text: "Easy mode full",
 						onclick: () => {
-							let middleC = Tone.middleC();
+							let middleC = Note.middleC();
 
 							this._dom.selectSignature.value = C_DUR;
-							this._dom.selectTonesCount.value = DATA.tonesCount[1];
-							this._dom.selectTonesTime.value = DATA.tonesTime[1];
-							this._dom.selectTonesType.value = 0;
-							this._dom.selectTonesShow.value = 1;
-							this._dom.selectStartTone.value = middleC.tone;
+							this._dom.selectNotesCount.value = DATA.notesCount[1];
+							this._dom.selectNotesTime.value = DATA.notesTime[1];
+							this._dom.selectNotesType.value = 0;
+							this._dom.selectNotesShow.value = 1;
+							this._dom.selectStartNote.value = middleC.note;
 							this._dom.selectStartOctave.value = middleC.octave - 2;
-							this._dom.selectEndTone.value = middleC.tone;
+							this._dom.selectEndNote.value = middleC.note;
 							this._dom.selectEndOctave.value = middleC.octave + 2;
 						}
 					}
@@ -314,14 +314,14 @@ class Game {
 		}
 
 		this._dom.selectSignature.value = defValues ? defValues.signature : C_DUR;
-		this._dom.selectTonesCount.value = defValues ? defValues.tonesCount : DATA.tonesCount[1];
-		this._dom.selectTonesTime.value = defValues ? defValues.tonesTime : DATA.tonesTime[0];
-		this._dom.selectTonesType.value = defValues ? defValues.tonesType : DATA.tonesType.length - 1;
-		this._dom.selectTonesShow.value = defValues ? defValues.tonesShow : 0;
+		this._dom.selectNotesCount.value = defValues ? defValues.notesCount : DATA.notesCount[1];
+		this._dom.selectNotesTime.value = defValues ? defValues.notesTime : DATA.notesTime[0];
+		this._dom.selectNotesType.value = defValues ? defValues.notesType : DATA.notesType.length - 1;
+		this._dom.selectNotesShow.value = defValues ? defValues.notesShow : 0;
 		this._dom.selectSound.value = defValues ? defValues.soundvalue : 1;
-		this._dom.selectStartTone.value = defValues ? defValues.startTone : KEYBOARD_RANGE[0].tone;
+		this._dom.selectStartNote.value = defValues ? defValues.startNote : KEYBOARD_RANGE[0].note;
 		this._dom.selectStartOctave.value = defValues ? defValues.startOctave : KEYBOARD_RANGE[0].octave;
-		this._dom.selectEndTone.value = defValues ? defValues.endTone : KEYBOARD_RANGE[1].tone;
+		this._dom.selectEndNote.value = defValues ? defValues.endNote : KEYBOARD_RANGE[1].note;
 		this._dom.selectEndOctave.value = defValues ? defValues.endOctave : KEYBOARD_RANGE[1].octave;
 	}
 
@@ -334,14 +334,14 @@ class Game {
 		// update local storage with options info
 		localStorage.setItem(LS_GAME_SETTINGS_KEY, JSON.stringify({
 			signature: this._dom.selectSignature.value,
-			tonesCount: this._dom.selectTonesCount.value,
-			tonesTime: this._dom.selectTonesTime.value,
-			tonesType: this._dom.selectTonesType.value,
-			tonesShow: this._dom.selectTonesShow.value,
+			notesCount: this._dom.selectNotesCount.value,
+			notesTime: this._dom.selectNotesTime.value,
+			notesType: this._dom.selectNotesType.value,
+			notesShow: this._dom.selectNotesShow.value,
 			soundvalue: this._dom.selectSound.value,
-			startTone: this._dom.selectStartTone.value,
+			startNote: this._dom.selectStartNote.value,
 			startOctave: this._dom.selectStartOctave.value,
-			endTone: this._dom.selectEndTone.value,
+			endNote: this._dom.selectEndNote.value,
 			endOctave: this._dom.selectEndOctave.value
 		}));
 
@@ -355,26 +355,26 @@ class Game {
 			this._gameData.timerID = null;
 		}
 
-		// generate tones
-		let time = parseFloat(this._dom.selectTonesTime.value);
-		let count = parseFloat(this._dom.selectTonesCount.value);
-		let tones = this._generateTones();
+		// generate notes
+		let time = parseFloat(this._dom.selectNotesTime.value);
+		let count = parseFloat(this._dom.selectNotesCount.value);
+		let notes = this._generateNotes();
 
-		if (!tones.length) {
-			this._showInfo("Tones range results in empty list!", false);
+		if (!notes.length) {
+			this._showInfo("Notes range results in empty list!", false);
 			return;
 		}
 
-		let gameTones = [];
+		let gameNotes = [];
 
 		while (true) {
-			let ind = Math.floor(Math.random() * (tones.length - 1));
+			let ind = Math.floor(Math.random() * (notes.length - 1));
 
-			if (!gameTones.length || (gameTones.length && gameTones[gameTones.length - 1] != tones[ind])) {
-				gameTones.push(tones[ind]);
+			if (!gameNotes.length || (gameNotes.length && gameNotes[gameNotes.length - 1] != notes[ind])) {
+				gameNotes.push(notes[ind]);
 			}
 
-			if (gameTones.length == count) break;
+			if (gameNotes.length == count) break;
 		}
 
 		this._gameData.ind = 0;
@@ -383,51 +383,51 @@ class Game {
 		this._gameData.correct = 0;
 		this._gameData.wrong = 0;
 		this._gameData.timerID = null;
-		this._gameData.tones = gameTones;
-		this._gameData.curTone = null;
+		this._gameData.notes = gameNotes;
+		this._gameData.curNote = null;
 
 		this._gameCycle();
 		this._showInfo("Game has started!");
 	}
 
 	/**
-	 * Generate tones.
+	 * Generate notes.
 	 */
-	_generateTones() {
-		// generate tones
-		let tone = this._dom.selectStartTone.value;
-		let endTone = this._dom.selectEndTone.value;
+	_generateNotes() {
+		// generate notes
+		let note = this._dom.selectStartNote.value;
+		let endNote = this._dom.selectEndNote.value;
 		let octave = parseFloat(this._dom.selectStartOctave.value);
 		let endOctave = parseFloat(this._dom.selectEndOctave.value);
-		let isSharp = this._dom.selectTonesType.value == "1";
+		let isSharp = this._dom.selectNotesType.value == "1";
 
-		return (new Tone(tone, octave)).generateTones(new Tone(endTone, endOctave), isSharp);
+		return (new Note(note, octave)).generateNotes(new Note(endNote, endOctave), isSharp);
 	}
 
 	/**
 	 * One game cycle.
 	 */
 	_gameCycle() {
-		if (!this._gameData.tones.length) {
+		if (!this._gameData.notes.length) {
 			this._showInfo("Finish");
 			return;
 		}
 
-		let withTone = this._dom.selectTonesShow.value == 1;
-		let tone = this._gameData.tones.shift();
+		let withNote = this._dom.selectNotesShow.value == 1;
+		let note = this._gameData.notes.shift();
 		
-		if (tone.octave < Tone.middleC().octave) {
-			this._notesBass.drawTone(tone, {
-				withTone
+		if (note.octave < Note.middleC().octave) {
+			this._notesBass.drawNote(note, {
+				withNote
 			});
 		}
 		else {
-			this._notesTreble.drawTone(tone, {
-				withTone
+			this._notesTreble.drawNote(note, {
+				withNote
 			});
 		}
 
-		this._gameData.curTone = tone;
+		this._gameData.curNote = note;
 		this._gameData.ind++;
 
 		let curTime = this._gameData.time - 1;
@@ -440,11 +440,11 @@ class Game {
 			if (curTime === 0) {
 				clearInterval(this._gameData.timerID);
 				this._gameData.timerID = null;
-				// error, tone was not found
+				// error, note was not found
 				this._gameData.wrong++;
-				this._showInfo(`Tone ${this._gameData.curTone.toString()} was not set!`, false);
-				this._keyboard.drawTone(this._gameData.curTone);
-				this._guessNewTone();
+				this._showInfo(`Note ${this._gameData.curNote.toString()} was not set!`, false);
+				this._keyboard.drawNote(this._gameData.curNote);
+				this._guessNewNote();
 				return;
 			}
 
@@ -453,14 +453,14 @@ class Game {
 	}
 
 	/**
-	 * Guess a new tone.
+	 * Guess a new note.
 	 */
-	_guessNewTone() {
+	_guessNewNote() {
 		let curTime = GUESS_NEW_TONE_TIME - 1;
 
 		this._dom.timeInfo.textContent = `${GUESS_NEW_TONE_TIME} s`;
 
-		// wait a while for the next tone
+		// wait a while for the next note
 		this._gameData.guessTimerID = setInterval(() => {
 			this._dom.timeInfo.textContent = `${curTime} s`;
 
@@ -470,7 +470,7 @@ class Game {
 				this._notesTreble.redraw();
 				this._notesBass.redraw();
 				this._keyboard.redraw();
-				this._showInfo("Guess a new tone");
+				this._showInfo("Guess a new note");
 				this._gameCycle();
 				return;
 			}
@@ -526,22 +526,22 @@ class Game {
 	 * @param   {Object}  key Key data
 	 */
 	_onKey(key) {
-		if (!this._gameData.curTone || this._gameData.guessTimerID) return;
+		if (!this._gameData.curNote || this._gameData.guessTimerID) return;
 
 		let signatureKey = this._dom.selectSignature.value;
 		let signature = KEYS_SIGNATURES_OBJ[signatureKey];
-		let tts = this._gameData.curTone.toSignature(signature);
+		let tts = this._gameData.curNote.toSignature(signature);
 
-		if (key.tone.equal(tts)) {
+		if (key.note.equal(tts)) {
 			this._gameData.correct++;
-			this._showInfo(`Success, tone was ${tts.toString()}`, true);
+			this._showInfo(`Success, note was ${tts.toString()}`, true);
 			clearInterval(this._gameData.timerID);
 			this._gameData.timerID = null;
-			this._guessNewTone();
+			this._guessNewNote();
 		}
 		else {
 			this._gameData.wrong++;
-			this._showInfo("Wrong, the tone is incorrect!", false);
+			this._showInfo("Wrong, the note is incorrect!", false);
 		}
 	}
 };

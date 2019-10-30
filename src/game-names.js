@@ -1,5 +1,5 @@
 import Keyboard from "keyboard";
-import { Tone } from "tone";
+import { Note } from "note";
 import { domCreate } from "utils";
 
 // timeout [ms]
@@ -11,7 +11,7 @@ class GameNames {
 		// build dom
 		this._buildDom();
 		// settings
-		this._currentTone = "";
+		this._currentNote = "";
 		this._timeoutId = null;
 		this._guessTimeoutID = null;
 		this._keyboard = new Keyboard(this._dom.keyboard, key => {
@@ -118,18 +118,18 @@ class GameNames {
 	 * One game cycle.
 	 */
 	_gameCycle() {
-		let newTone = this._currentTone.simple;
+		let newNote = this._currentNote.simple;
 		
-		while (newTone == this._currentTone.simple) {
-			newTone = Tone.randomTone();
+		while (newNote == this._currentNote.simple) {
+			newNote = Note.random();
 		}
 
-		this._currentTone = newTone;
-		this._showInfo(`Find tone ${this._currentTone.simple}`);
+		this._currentNote = newNote;
+		this._showInfo(`Find note ${this._currentNote.simple}`);
 		this._timeoutId = setTimeout(() => {
 			this._timeoutId = null;
 			// error, note was not found
-			this._showInfo(`Tone ${this._currentTone.simple} was not found!`, false);
+			this._showInfo(`Note ${this._currentNote.simple} was not found!`, false);
 			this._guessNewNote();
 		}, TIMEOUT);
 	}
@@ -172,15 +172,15 @@ class GameNames {
 	_onKey(key) {
 		if (!this._timeoutId) return;
 
-		if (key.tone.simple == this._currentTone.simple) {
+		if (key.note.simple == this._currentNote.simple) {
 			// correct
-			this._showInfo(`Success, tone was ${key.tone.simple}`, true);
+			this._showInfo(`Success, note was ${key.note.simple}`, true);
 			clearTimeout(this._timeoutId);
 			this._timeoutId = null;
 			this._guessNewNote();
 		}
 		else {
-			this._showInfo("Wrong, the tone is incorrect!", false);
+			this._showInfo("Wrong, the note is incorrect!", false);
 		}
 	}
 };

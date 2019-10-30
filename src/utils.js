@@ -1,5 +1,5 @@
-import { Tone, GUITAR_TONES } from "tone";
-import { ALL_TONES_SHARP, KEYS_SIGNATURES, FLAT_TO_SHARP_MAPPING } from "conf";
+import { Note, GUITAR_NOTES } from "note";
+import { ALL_NOTES_SHARP, KEYS_SIGNATURES, FLAT_TO_SHARP_MAPPING } from "conf";
 
 /**
  * Get image from src.
@@ -83,7 +83,7 @@ export function domCreate(config, exported) {
 };
 
 /**
- * Generate all strings tones.
+ * Generate all strings notes.
  *
  * @param   {Number}  stringsCount Strings count
  * @param   {Number}  fretsCount  Frets count
@@ -94,12 +94,12 @@ export function domCreate(config, exported) {
 export function generateStrings(stringsCount, fretsCount, config) {
 	let strings = [];
 
-	for (let i = 0, max = Math.min(GUITAR_TONES.length, stringsCount); i < max; i++) {
-		let stringData = GUITAR_TONES[i];
+	for (let i = 0, max = Math.min(GUITAR_NOTES.length, stringsCount); i < max; i++) {
+		let stringData = GUITAR_NOTES[i];
 		let string = [];
-		let ind = ALL_TONES_SHARP.indexOf(stringData.startTone.tone) + config[config.length - 1 - i];
-		let octave = stringData.startTone.octave;
-		let maxLen = ALL_TONES_SHARP.length;
+		let ind = ALL_NOTES_SHARP.indexOf(stringData.startNote.note) + config[config.length - 1 - i];
+		let octave = stringData.startNote.octave;
+		let maxLen = ALL_NOTES_SHARP.length;
 
 		if (ind < 0) {
 			ind += maxLen;
@@ -111,9 +111,9 @@ export function generateStrings(stringsCount, fretsCount, config) {
 		}
 
 		for (let x = 0; x < fretsCount; x++) {
-			let tone = ALL_TONES_SHARP[ind];
+			let note = ALL_NOTES_SHARP[ind];
 			string.push({
-				tone: new Tone(tone, octave),
+				note: new Note(note, octave),
 				fret: x
 			});
 			ind++;
@@ -130,25 +130,25 @@ export function generateStrings(stringsCount, fretsCount, config) {
 };
 
 /**
- * Get signature tones.
+ * Get signature notes.
  *
  * @param   {String}  signatureName
  * @param   {Number}  octave Start octave
- * @return  {Array[Tone]}
+ * @return  {Array[Note]}
  */
-export function getSignatureTones(signatureName, octave) {
+export function getSignatureNotes(signatureName, octave) {
 	let value = KEYS_SIGNATURES.filter(i => i.name == signatureName);
 
 	if (value.length) {
 		let item = value[0];
 		
 		return {
-			msg: item.tones.join(", "),
-			tones: item.tones.map(i => {
+			msg: item.notes.join(", "),
+			notes: item.notes.map(i => {
 				if (item.key == "b" && i.indexOf("b") != -1) {
-					return new Tone(FLAT_TO_SHARP_MAPPING[i].tone, octave + FLAT_TO_SHARP_MAPPING[i].octave);
+					return new Note(FLAT_TO_SHARP_MAPPING[i].note, octave + FLAT_TO_SHARP_MAPPING[i].octave);
 				}
-				else return new Tone(i, octave);
+				else return new Note(i, octave);
 			})
 		};
 	}

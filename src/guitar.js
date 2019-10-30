@@ -1,9 +1,10 @@
+import KeyboardSound from "keyboard-sound";
 import { GUITAR_POINTED_FRETS } from "conf";
 import { generateStrings } from "utils";
 
 const CONFIG = {
 	strings: 6,
-	frets: 25, // included 0 tone, add +1
+	frets: 25, // included 0 note, add +1
 	lineWidth: 1,
 	lineHeight: 1,
 	cellHeight: 30,
@@ -71,7 +72,7 @@ class Guitar {
 		this._drawBackground();
 		this._drawLines();
 		this._drawCircles();
-		this._drawTones();
+		this._drawNotes();
 	}
 
 	/**
@@ -83,43 +84,43 @@ class Guitar {
 	}
 
 	/**
-	 * Draw a tone.
+	 * Draw a note.
 	 *
-	 * @param   {String}  tone  C...
+	 * @param   {String}  note  C...
 	 * @param   {Number}  octave 0-8
 	 * @param   {Object}  [optsArg] Config
-	 * @param   {Boolean}  [isSharp] Sharp tone?
+	 * @param   {Boolean}  [isSharp] Sharp note?
 	 */
-	drawTone(tone) {
+	drawNote(note) {
 		this._drawBackground();
 		this._drawLines();
 		
 		this._strings.forEach((string, ind) => {
-			string.forEach(toneItem => {
-				if (toneItem.tone.equal(tone)) {
-					this._fillCell(toneItem.fret, ind);
+			string.forEach(noteItem => {
+				if (noteItem.note.equal(note)) {
+					this._fillCell(noteItem.fret, ind);
 				}
 			});
 		});
 
 		this._drawCircles();
-		this._drawTones();
+		this._drawNotes();
 	}
 
 	/**
-	 * Draw multiple tones.
+	 * Draw multiple notes.
 	 *
-	 * @param   {Array}  tones Array of tones
+	 * @param   {Array}  notes Array of notes
 	 */
-	drawTones(tones) {
+	drawNotes(notes) {
 		this._drawBackground();
 		this._drawLines();
 		
 		this._strings.forEach((string, ind) => {
-			string.forEach(toneItem => {
-				for (let tone of tones) {
-					if (toneItem.tone.equal(tone)) {
-						this._fillCell(toneItem.fret, ind);
+			string.forEach(noteItem => {
+				for (let note of notes) {
+					if (noteItem.note.equal(note)) {
+						this._fillCell(noteItem.fret, ind);
 						break;
 					}
 				}
@@ -127,7 +128,7 @@ class Guitar {
 		});
 
 		this._drawCircles();
-		this._drawTones();
+		this._drawNotes();
 	}
 
 	/**
@@ -214,9 +215,9 @@ class Guitar {
 	}
 
 	/**
-	 * Draw all tones.
+	 * Draw all notes.
 	 */
-	_drawTones() {
+	_drawNotes() {
 		this._ctx.fillStyle = "#000";
 
 		let x;
@@ -226,7 +227,7 @@ class Guitar {
 			x = CONFIG.padding + CONFIG.lineWidth;
 
 			string.forEach((stringItem, ind) => {
-				let text = stringItem.tone.toString(true);
+				let text = stringItem.note.toString(true);
 				this._ctx.font = `bold ${text.length == 2 ? 16 : (!ind ? 12 : 14)}px Arial`;
 				let textDim = this._ctx.measureText(text);
 				this._ctx.fillText(text, x + Math.floor((this._dim.cellWidth - textDim.width) / 2) + (!ind ? -2 : 0), y + Math.floor(CONFIG.cellHeight / 2 + 5));
@@ -275,6 +276,8 @@ class Guitar {
 
 		let item = this._strings[y][x];
 
+		if (!item) return;
+
 		if (typeof this._onClick === "function") {
 			this._onClick(item);
 		}
@@ -283,7 +286,8 @@ class Guitar {
 		this._drawLines();
 		this._fillCell(x, y);
 		this._drawCircles();
-		this._drawTones();
+		this._drawNotes();
+		KeyboardSound.playNote(item.note);
 	}
 }
 

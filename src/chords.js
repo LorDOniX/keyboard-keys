@@ -1,4 +1,4 @@
-import { Tone } from "tone";
+import { Note } from "note";
 import { CHORDS_KEYS, CHORDS_NOTES } from "conf";
 
 class Chords {
@@ -8,14 +8,14 @@ class Chords {
 	 * @param   {Main}  owner 
 	 * @param   {Select}  octaveSelectEl  Element for octaves
 	 * @param   {Select}  keySelectEl    Element for keys
-	 * @param   {Select}  toneSelectEl  Element for notes
+	 * @param   {Select}  noteSelectEl  Element for notes
 	 * @param   {Element}  showBtn  Show button reference
 	 */
-	constructor(owner, octaveSelectEl, keySelectEl, toneSelectEl, showBtn) {
+	constructor(owner, octaveSelectEl, keySelectEl, noteSelectEl, showBtn) {
 		this._owner = owner;
 		this._octaveSelectEl = octaveSelectEl;
 		this._keySelectEl = keySelectEl;
-		this._toneSelectEl = toneSelectEl;
+		this._noteSelectEl = noteSelectEl;
 		showBtn.addEventListener("click", () => {
 			this._showChord();
 		});
@@ -48,26 +48,26 @@ class Chords {
 			let option = document.createElement("option");
 			option.value = note;
 			option.textContent = note;
-			this._toneSelectEl.appendChild(option);
+			this._noteSelectEl.appendChild(option);
 		});
 
 		// def. values
-		let middleC = Tone.middleC();
+		let middleC = Note.middleC();
 
 		this._octaveSelectEl.value = middleC.octave;
-		this._toneSelectEl.value = middleC.tone;
+		this._noteSelectEl.value = middleC.note;
 	}
 
 	/**
 	 * Button click - show chord.
 	 */
 	_showChord() {
-		let tone = this._toneSelectEl.value;
+		let note = this._noteSelectEl.value;
 		let octave = parseFloat(this._octaveSelectEl.value);
 		let key = this._keySelectEl.value;
-		let chordNotes = (new Tone(tone, octave)).generateChord(key);
+		let chordNotes = (new Note(note, octave)).generateChord(key);
 
-		this._owner.showChord(`${key.toLowerCase()} ${tone}`, chordNotes);
+		this._owner.showChord(`${key.toLowerCase()} ${note}`, chordNotes);
 	}
 }
 

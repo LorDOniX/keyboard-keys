@@ -1,6 +1,7 @@
 import Learn from "./learn";
 import Game from "./game";
 import GameNames from "./game-names";
+import KeyboardSound from "./keyboard-sound";
 import { domCreate } from "./utils";
 import Resources from "./resources";
 
@@ -24,6 +25,7 @@ class Main {
 	 */
 	async _init() {
 		await Resources.load();
+		KeyboardSound.init();
 		
 		this._learn = new Learn();
 		this._game = new Game();

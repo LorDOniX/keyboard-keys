@@ -1,6 +1,11 @@
 import Resources from "./resources";
+import { Note } from "./note";
 import KeyboardData from "keyboard-data";
+import KeyboardSound from "./keyboard-sound";
 import { IMAGES, BLACK_KEY_POSITION } from "conf";
+
+const NOTE_A0 = new Note("A0");
+const NOTE_C8 = new Note("C8");
 
 class Keyboard {
 	/**
@@ -60,28 +65,28 @@ class Keyboard {
 	}
 
 	/**
-	 * Draw tone.
+	 * Draw note.
 	 *
-	 * @param   {Tone}  tone  C...
+	 * @param   {Note}  note  C...
 	 */
-	drawTone(tone) {
+	drawNote(note) {
 		if (this._keyboardData) {
 			this.redraw();
-			this._drawTone(this._keyboardData.findByTone(tone));
+			this._drawNote(this._keyboardData.findByNote(note));
 		}
 	}
 
 	/**
-	 * Draw multiple tones.
+	 * Draw multiple notes.
 	 *
-	 * @param   {Array}  keys Array of Tone
+	 * @param   {Array}  keys Array of Note
 	 */
-	drawTones(tones) {
+	drawNotes(notes) {
 		if (this._keyboardData) {
 			this.redraw();
 
-			tones.forEach(tone => {
-				this._drawTone(this._keyboardData.findByTone(tone));
+			notes.forEach(note => {
+				this._drawNote(this._keyboardData.findByNote(note));
 			});
 		}
 	}
@@ -90,7 +95,7 @@ class Keyboard {
 	 * Draw key from data.
 	 *
 	 */
-	_drawTone(keyData) {
+	_drawNote(keyData) {
 		if (!keyData) return;
 
 		this._ctx.fillStyle = "rgba(255, 0, 0, 0.5)";
@@ -99,9 +104,13 @@ class Keyboard {
 			this._ctx.fillRect(keyData.x, keyData.y, keyData.width, keyData.height);
 		}
 		else {
-			let bkp = keyData.tone.blackKeyPosition();
+			let bkp = keyData.note.equal(NOTE_C8) ? null : keyData.note.blackKeyPosition();
 
 			if (bkp !== null) {
+				if (keyData.note.equal(NOTE_A0)) {
+					bkp = BLACK_KEY_POSITION.right;
+				}
+
 				let blackKey = this._keyboardData.firstBlackKey;
 				let newY = blackKey.y + blackKey.height;
 				let bottomY = keyData.y + keyData.height;
@@ -177,7 +186,8 @@ class Keyboard {
 
 			if (keyData) {
 				this.redraw();
-				this._drawTone(keyData);
+				this._drawNote(keyData);
+				KeyboardSound.playNote(keyData.note);
 				if (typeof this._onKey === "function") this._onKey(keyData);
 			}
 		}
