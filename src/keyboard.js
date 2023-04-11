@@ -39,7 +39,7 @@ class Keyboard {
 
 		if (this._lastRatio != ratio) {
 			let height = IMAGES.layout.height * ratio;
-			
+
 			this._keyboardData = new KeyboardData(ratio);
 			this._canvas.width = availWidth;
 			this._canvas.height = height;
@@ -131,7 +131,7 @@ class Keyboard {
 							w *= 0.3;
 							startX += (keyData.width * 0.7) / 2;
 						}
-						
+
 						break;
 
 					case BLACK_KEY_POSITION.left:
@@ -164,7 +164,7 @@ class Keyboard {
 		});
 
 		this._ctx.strokeStyle = "blue";
-		
+
 		this._keyboardData.black.forEach(item => {
 			this._ctx.beginPath();
 			this._ctx.rect(item.x, item.y, item.width, item.height);
@@ -178,8 +178,9 @@ class Keyboard {
 	 * @param   {MouseEvent}  e Click
 	 */
 	_canvasClick(e) {
-		let x = e.layerX;
-		let y = e.layerY;
+		const cbr = e.target.getBoundingClientRect();
+		let x = e.clientX - cbr.x;
+		let y = e.clientY - cbr.y;
 
 		if (this._keyboardData) {
 			let keyData = this._keyboardData.getKey(x, y);

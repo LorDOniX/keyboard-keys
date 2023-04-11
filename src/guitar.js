@@ -94,7 +94,7 @@ class Guitar {
 	drawNote(note) {
 		this._drawBackground();
 		this._drawLines();
-		
+
 		this._strings.forEach((string, ind) => {
 			string.forEach(noteItem => {
 				if (noteItem.note.equal(note)) {
@@ -115,7 +115,7 @@ class Guitar {
 	drawNotes(notes) {
 		this._drawBackground();
 		this._drawLines();
-		
+
 		this._strings.forEach((string, ind) => {
 			string.forEach(noteItem => {
 				for (let note of notes) {
@@ -258,8 +258,9 @@ class Guitar {
 	 * @param   {MouseEvent}  e Click
 	 */
 	_canvasClick(e) {
-		let x = e.layerX;
-		let y = e.layerY;
+		const cbr = e.target.getBoundingClientRect();
+		let x = e.clientX - cbr.x;
+		let y = e.clientY - cbr.y;
 
 		x -= CONFIG.padding;
 		y -= CONFIG.padding;

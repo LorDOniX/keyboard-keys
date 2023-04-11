@@ -379,7 +379,7 @@ class Notes {
 				let item = this._dim.lines[i];
 
 				if (!item || (i == max && findData.note.simple == "C" && findData.note.octave == 1)) break;
-				
+
 				this._ctx.beginPath();
 				this._ctx.moveTo(findData.x - 5, item.y);
 				this._ctx.lineTo(findData.x + 2 * CONFIG.noteSize + 5, item.y);
@@ -396,8 +396,9 @@ class Notes {
 	 * @param   {MouseEvent}  e Click
 	 */
 	_canvasClick(e) {
-		let x = e.layerX;
-		let y = e.layerY;
+		const cbr = e.target.getBoundingClientRect();
+		let x = e.clientX - cbr.x;
+		let y = e.clientY - cbr.y;
 
 		let distances =  this._dim.lines.map(line => {
 			return {
