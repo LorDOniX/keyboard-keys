@@ -179,6 +179,10 @@ export const GUITAR_TUNES = [{
 	name: "Drop A#",
 	key: "A#FA#D#GC",
 	config: [-6, -4, -4, -4, -4, -4]
+}, {
+	name: "Drop G#",
+	key: "G#D#G#C#FA#",
+	config: [-8, -6, -6, -6, -6, -6]
 }];
 
 export const BLACK_KEY_POSITION = {
